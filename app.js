@@ -105,6 +105,7 @@ const STRINGS = {
     toggleAria: 'Switch the site to Arabic',
     navProducts: 'Laptops',
     navAbout: 'About us',
+    navEstimate: 'Price estimator',
     waShort: 'WhatsApp',
     aboutTitle: 'About RAS Solutions',
 
@@ -139,6 +140,32 @@ const STRINGS = {
     lastOne: 'Last one',
     unitsLeft: function (n) { return n + ' left'; },
 
+    /* price estimator */
+    estTitle: 'What is your laptop worth in Lebanon?',
+    estIntro: 'Pick what your laptop has and the estimate updates as you go. It is based on what comparable laptops sell for in Lebanon.',
+    estDisclaimer: 'This is a guide, not an offer. Condition and the exact model move the real number. For a firm price on a specific machine, send us the details on WhatsApp.',
+    estBrand: 'Brand and range',
+    estCpu: 'Processor',
+    estGeneration: 'Processor generation',
+    estRam: 'Memory (RAM)',
+    estStorage: 'Storage',
+    estGraphics: 'Graphics',
+    estScreen: 'Screen',
+    estBattery: 'Battery',
+    estCondition: 'Condition',
+    estExtras: 'Extras',
+    estResultLabel: 'Estimated value in Lebanon',
+    estBreakdown: 'How this number was worked out',
+    estColItem: 'Item',
+    estColChoice: 'Choice',
+    estColEffect: 'Effect',
+    estBaseRow: 'Processor base',
+    estSubtotalRow: 'Subtotal before multipliers',
+    estMarketRow: 'Lebanon market factor',
+    estSendWhatsapp: 'Send these details on WhatsApp',
+    estDownloadCsv: 'Download as CSV',
+    estCsvHint: 'The CSV opens straight in Excel, one row per item, so you can keep a record of every laptop you price.',
+
     /* states */
     loading: 'Loading the current list…',
     errorTitle: 'The list did not load',
@@ -169,6 +196,7 @@ const STRINGS = {
     toggleAria: 'حوّل الموقع عالإنكليزي',
     navProducts: 'اللابتوبات',
     navAbout: 'مين نحنا',
+    navEstimate: 'قدّر سعر جهازك',
     waShort: 'واتساب',
     aboutTitle: 'مين نحنا — RAS Solutions',
 
@@ -202,6 +230,32 @@ const STRINGS = {
     inStock: 'متوفّر',
     lastOne: 'آخر قطعة',
     unitsLeft: function (n) { return 'باقي ' + n; },
+
+    /* price estimator */
+    estTitle: 'قديش بيسوى لابتوبك بلبنان؟',
+    estIntro: 'اختار شو في بلابتوبك والتقدير بيتحدّث لحظة بلحظة. الحساب مبني على أسعار أجهزة شبيهة بلبنان.',
+    estDisclaimer: 'هيدا تقدير تقريبي، مش عرض شراء. الحالة والموديل بالزبط بيغيّروا الرقم الحقيقي. لسعر نهائي لجهاز معيّن، ابعتلنا التفاصيل عالواتساب.',
+    estBrand: 'الماركة والفئة',
+    estCpu: 'المعالج',
+    estGeneration: 'جيل المعالج',
+    estRam: 'الرام',
+    estStorage: 'الستوريج',
+    estGraphics: 'كرت الشاشة',
+    estScreen: 'الشاشة',
+    estBattery: 'البطارية',
+    estCondition: 'الحالة',
+    estExtras: 'إضافات',
+    estResultLabel: 'القيمة التقديرية بلبنان',
+    estBreakdown: 'كيف طلع هالرقم',
+    estColItem: 'البند',
+    estColChoice: 'الاختيار',
+    estColEffect: 'التأثير',
+    estBaseRow: 'أساس المعالج',
+    estSubtotalRow: 'المجموع قبل المعاملات',
+    estMarketRow: 'معامل السوق اللبناني',
+    estSendWhatsapp: 'ابعت هالتفاصيل عالواتساب',
+    estDownloadCsv: 'نزّلها CSV',
+    estCsvHint: 'ملف الـ CSV بيفتح دغري بالإكسل، كل بند بسطر، لتقدر تحتفظ بسجل لكل جهاز بتسعّره.',
 
     /* states */
     loading: 'عم نجيب اللائحة…',
@@ -703,11 +757,190 @@ function renderChrome() {
 function render() {
   renderChrome();
   renderCatalog();
+  renderEstimator();
 }
 
 function setLanguage(next) {
   LANG = (next === 'ar') ? 'ar' : 'en';
   render();
+}
+
+/* -----------------------------------------------------------------------------
+   7b) Price estimator  (estimate.html)
+
+   All the numbers live in pricing-model.js. This part only draws the form,
+   keeps the current answers in a plain variable and shows the result.
+----------------------------------------------------------------------------- */
+
+/* What the visitor has picked so far. Sensible mid-range defaults, so the page
+   shows a real number the moment it opens rather than an empty box. */
+var ESTIMATE_INPUT = {
+  brand: 'business', cpu: 'i5', generation: 'g11', ram: '8', storage: 'ssd256',
+  graphics: 'integrated', screen: 'fhd15', battery: 'ok', condition: 'good',
+  extras: []
+};
+
+/* The dropdowns, in the order they appear. Each maps a pricing-model.js group
+   to the STRINGS key that labels it. */
+var ESTIMATE_FIELDS = [
+  { group: 'brand',      labelKey: 'estBrand' },
+  { group: 'cpu',        labelKey: 'estCpu' },
+  { group: 'generation', labelKey: 'estGeneration' },
+  { group: 'ram',        labelKey: 'estRam' },
+  { group: 'storage',    labelKey: 'estStorage' },
+  { group: 'graphics',   labelKey: 'estGraphics' },
+  { group: 'screen',     labelKey: 'estScreen' },
+  { group: 'battery',    labelKey: 'estBattery' },
+  { group: 'condition',  labelKey: 'estCondition' }
+];
+
+function optionLabel(opt) { return opt[LANG] || opt.en; }
+
+/* "Premium business — ThinkPad X1, EliteBook" -> "Premium business".
+   The long half of a label is there to help the visitor choose; it would only
+   clutter a WhatsApp message or a CSV row. */
+function shortLabel(opt) { return optionLabel(opt).split('—')[0].trim(); }
+
+function estimateMoney(n) { return CONFIG.priceFormat.replace('{n}', String(n)); }
+
+function renderEstimator() {
+  var form = document.getElementById('estimator-form');
+  if (!form || typeof PRICING === 'undefined') return;   /* not on this page */
+  var s = t();
+
+  var html = ESTIMATE_FIELDS.map(function (f) {
+    var list = PRICING[f.group] || [];
+    var options = list.map(function (o) {
+      var on = (ESTIMATE_INPUT[f.group] === o.key) ? ' selected' : '';
+      return '<option value="' + esc(o.key) + '"' + on + '>' + esc(optionLabel(o)) + '</option>';
+    }).join('');
+    return '<p class="field">' +
+      '<label for="f-' + esc(f.group) + '">' + esc(s[f.labelKey]) + '</label>' +
+      '<select id="f-' + esc(f.group) + '" data-group="' + esc(f.group) + '">' + options + '</select>' +
+      '</p>';
+  }).join('');
+
+  html += '<fieldset class="field field-extras">' +
+    '<legend>' + esc(s.estExtras) + '</legend><div class="checks">' +
+    PRICING.extras.map(function (o) {
+      var on = (ESTIMATE_INPUT.extras.indexOf(o.key) > -1) ? ' checked' : '';
+      return '<label class="check"><input type="checkbox" data-extra value="' + esc(o.key) + '"' + on + '>' +
+             '<span>' + esc(optionLabel(o)) + '</span></label>';
+    }).join('') +
+    '</div></fieldset>';
+
+  form.innerHTML = html;
+
+  form.querySelectorAll('select[data-group]').forEach(function (sel) {
+    sel.addEventListener('change', function () {
+      ESTIMATE_INPUT[sel.getAttribute('data-group')] = sel.value;
+      renderEstimateResult();
+    });
+  });
+
+  form.querySelectorAll('[data-extra]').forEach(function (box) {
+    box.addEventListener('change', function () {
+      var at = ESTIMATE_INPUT.extras.indexOf(box.value);
+      if (box.checked && at === -1) ESTIMATE_INPUT.extras.push(box.value);
+      if (!box.checked && at > -1) ESTIMATE_INPUT.extras.splice(at, 1);
+      renderEstimateResult();
+    });
+  });
+
+  renderEstimateResult();
+}
+
+/* A one-line summary of the picked laptop, used in the WhatsApp message. */
+function estimateSpecLine() {
+  return ESTIMATE_FIELDS.map(function (f) {
+    return shortLabel(pricingOption(f.group, ESTIMATE_INPUT[f.group]));
+  }).join(' / ');
+}
+
+var ESTIMATE_CSV_URL = null;
+
+function renderEstimateResult() {
+  var host = document.getElementById('estimator-result');
+  if (!host || typeof PRICING === 'undefined') return;
+  var s = t();
+  var r = estimateLaptopPrice(ESTIMATE_INPUT);
+
+  var rows = r.lines.map(function (line) {
+    var effect = (line.kind === 'multiplier')
+      ? '× ' + line.option.value.toFixed(2)
+      : (line.amount >= 0 ? '+ ' : '− ') + estimateMoney(Math.abs(line.amount));
+    var groupLabel = s['est' + line.group.charAt(0).toUpperCase() + line.group.slice(1)] || line.group;
+    return '<tr><td>' + esc(groupLabel) + '</td>' +
+           '<td>' + esc(shortLabel(line.option)) + '</td>' +
+           '<td class="num" dir="ltr">' + esc(effect) + '</td></tr>';
+  }).join('');
+
+  rows += '<tr class="row-sum"><td colspan="2">' + esc(s.estSubtotalRow) + '</td>' +
+          '<td class="num" dir="ltr">' + esc(estimateMoney(r.subtotal)) + '</td></tr>';
+  rows += '<tr class="row-sum"><td colspan="2">' + esc(s.estMarketRow) + '</td>' +
+          '<td class="num" dir="ltr">× ' + esc(PRICING.marketFactor.toFixed(2)) + '</td></tr>';
+
+  var waMessage = s.estWaMessage
+    ? s.estWaMessage(estimateSpecLine(), r.low, r.high)
+    : (LANG === 'ar'
+        ? 'مرحبا، قدّرت سعر لابتوبي عالموقع: ' + estimateSpecLine() +
+          ' — التقدير ' + estimateMoney(r.low) + ' - ' + estimateMoney(r.high)
+        : 'Hi, I priced my laptop on your site: ' + estimateSpecLine() +
+          ' — estimate ' + estimateMoney(r.low) + ' - ' + estimateMoney(r.high));
+
+  host.innerHTML =
+    '<div class="est-figure">' +
+      '<p class="est-label">' + esc(s.estResultLabel) + '</p>' +
+      '<p class="est-range" dir="ltr">' + esc(estimateMoney(r.low)) +
+        ' <span>–</span> ' + esc(estimateMoney(r.high)) + '</p>' +
+      '<p class="est-note">' + esc(s.estDisclaimer) + '</p>' +
+      '<p class="est-actions">' +
+        '<a class="btn btn-wa" target="_blank" rel="noopener" href="' + esc(whatsappLink(waMessage)) + '">' +
+          icon('whatsapp') + '<span>' + esc(s.estSendWhatsapp) + '</span></a>' +
+        '<a class="btn btn-ghost" id="est-csv" download="laptop-estimate.csv">' +
+          esc(s.estDownloadCsv) + '</a>' +
+      '</p>' +
+    '</div>' +
+    '<details class="est-breakdown" open>' +
+      '<summary>' + esc(s.estBreakdown) + '</summary>' +
+      '<div class="table-scroll"><table><thead><tr>' +
+        '<th>' + esc(s.estColItem) + '</th>' +
+        '<th>' + esc(s.estColChoice) + '</th>' +
+        '<th class="num">' + esc(s.estColEffect) + '</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      '<p class="est-note">' + esc(s.estCsvHint) + '</p>' +
+    '</details>';
+
+  attachCsvDownload(r);
+}
+
+/* Builds the CSV in the browser and hands it to the download link.
+   The leading \ufeff is a byte-order mark: without it Excel opens the Arabic
+   labels as mojibake. */
+function attachCsvDownload(r) {
+  var link = document.getElementById('est-csv');
+  if (!link) return;
+  var s = t();
+
+  function cell(v) {
+    var text = String(v == null ? '' : v);
+    return '"' + text.replace(/"/g, '""') + '"';
+  }
+
+  var out = [['Item', 'Choice', 'Type', 'Value'].map(cell).join(',')];
+  r.lines.forEach(function (line) {
+    var groupLabel = s['est' + line.group.charAt(0).toUpperCase() + line.group.slice(1)] || line.group;
+    out.push([groupLabel, shortLabel(line.option), line.kind, line.amount].map(cell).join(','));
+  });
+  out.push(['Subtotal', '', 'sum', r.subtotal].map(cell).join(','));
+  out.push(['Market factor', '', 'multiplier', PRICING.marketFactor].map(cell).join(','));
+  out.push(['Estimate low', '', 'usd', r.low].map(cell).join(','));
+  out.push(['Estimate high', '', 'usd', r.high].map(cell).join(','));
+
+  var blob = new Blob(['\ufeff' + out.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  if (ESTIMATE_CSV_URL) URL.revokeObjectURL(ESTIMATE_CSV_URL);
+  ESTIMATE_CSV_URL = URL.createObjectURL(blob);
+  link.setAttribute('href', ESTIMATE_CSV_URL);
 }
 
 /* -----------------------------------------------------------------------------

@@ -5,10 +5,12 @@ folder onto any host (Netlify, Cloudflare Pages, GitHub Pages, cPanel, anything)
 it works.
 
 ```
-index.html      the product list
-about.html      company page, the one AI assistants read
+index.html         the product list
+estimate.html     the laptop price estimator
+about.html        company page, the one AI assistants read
 style.css
-app.js          CONFIG and all wording live at the top of this file
+app.js            CONFIG and all wording live at the top of this file
+pricing-model.js  every number the price estimator uses
 llms.txt        plain-text summary for AI crawlers
 robots.txt
 sitemap.xml
@@ -156,7 +158,74 @@ on the site, so a red badge always means the same thing.
 
 ---
 
-## 6. Add a photo
+## 6. The price estimator
+
+`estimate.html` lets a visitor price their own laptop. Every number it uses lives
+in **`pricing-model.js`** — that is the only file to edit, and it is commented
+line by line.
+
+**The formula**, which is also written at the top of that file:
+
+```
+base     = processor value x generation factor
+subtotal = base + RAM + storage + graphics + screen + extras
+value    = subtotal x brand grade x condition x battery x marketFactor
+```
+
+The result is shown as a range, not a single number, because a single number
+would claim more precision than the model has.
+
+**The four dials to reach for first**, at the top of the file:
+
+| setting         | what it does                                              |
+| --------------- | --------------------------------------------------------- |
+| `marketFactor`  | multiplies every estimate. Reads high everywhere? Drop it to 0.95. |
+| `spreadPct`     | how wide the range is. `0.12` = −12% to +12%.               |
+| `minimumValue`  | nothing is ever estimated below this                       |
+| `roundTo`       | rounds to the nearest 5 by default                         |
+
+**Everything else is a list you can edit.** Each entry is one line with a `key`,
+a `value` and its `en` / `ar` labels:
+
+```js
+{ key: 'i5', value: 165, en: 'Intel Core i5', ar: 'Intel Core i5' },
+```
+
+Add a line and a new dropdown option appears on the page, in both languages. The
+groups are `cpu`, `generation`, `brand`, `ram`, `storage`, `graphics`, `screen`,
+`battery`, `condition` and `extras` (the checkboxes).
+
+Two things worth knowing before you start tuning:
+
+- **Age is carried by the processor generation**, not by a separate year field.
+  A 2017 laptop and a 7th-gen CPU are the same statement; counting both would
+  push older machines down to nothing.
+- **`brand`, `condition` and `battery` are multipliers**, everything else is an
+  amount in USD. So changing `condition` moves the whole estimate by a
+  percentage, while changing `ram` moves it by a fixed number of dollars.
+
+**Filling it with real Lebanon prices.** The numbers shipped today are plausible
+starting points, not measured facts. As you gather real listings:
+
+1. Price a laptop you already know the market value of.
+2. If the estimate is off in the same direction for everything, change
+   `marketFactor` only, and stop there.
+3. If it is off for one kind of machine — say gaming laptops read low — change
+   that one line instead.
+
+**The CSV button** on the result panel downloads the full breakdown, one row per
+item, and opens straight in Excel with the Arabic labels intact. That is the
+quickest way to build the spreadsheet: price a batch of laptops, download each
+one, and paste the rows together.
+
+**A word on what this page claims.** It is labelled a guide, not an offer, in
+both languages, and it never shows what you would pay for a machine — only what
+one is worth on the market. Keep it that way: an estimator that doubles as a
+buy-price calculator publishes your margin.
+
+---
+
+## 7. Add a photo
 
 1. Name the file after the product, lowercase, with dashes: `latitude-7430.jpg`.
 2. Drop it into the `images/` folder.
@@ -171,7 +240,7 @@ shows a neutral placeholder instead of a broken image.
 
 ---
 
-## 7. Hide a product
+## 8. Hide a product
 
 Set its `stock` to **0**, or clear the cell.
 
@@ -180,7 +249,7 @@ the site on the next page load. Put a number back in and it returns.
 
 ---
 
-## 8. Change the wording
+## 9. Change the wording
 
 All interface text is in the `STRINGS` object near the top of `app.js`, with an `en`
 block and an `ar` block side by side. Edit the line you want, in both languages.
@@ -197,7 +266,7 @@ two do not drift apart.
 
 ---
 
-## 9. Change the domain
+## 10. Change the domain
 
 The site is live at `https://fryangotit.github.io/ras-laptops` (GitHub Pages). When you buy
 the real domain, do a find-and-replace for `fryangotit.github.io/ras-laptops` across the
@@ -222,7 +291,7 @@ works fine on the github.io address today.
 
 ---
 
-## 10. Previewing on your own machine
+## 11. Previewing on your own machine
 
 Opening `index.html` by double-clicking mostly works, **except** the product list:
 browsers block a page opened from your hard drive from fetching the Google Sheet. You
