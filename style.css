@@ -1,0 +1,373 @@
+/* =============================================================================
+   RAS Solutions - style.css
+   Mobile first. Navy / royal blue with cyan accents.
+
+   Colour rules baked into this file:
+     - cyan is for accents, icons, underlines and focus rings only. Cyan is
+       never used for body text. Where a blue text link is needed, the darker
+       --link (#0284C7) is used instead, which passes contrast on white.
+     - red is only ever used for a low stock count. Nothing else is red.
+     - the hero gradient is the only gradient on the site.
+   ============================================================================= */
+
+:root {
+  --navy:#0B1F3A;  --royal:#1B4F9C;  --cyan:#38BDF8;  --alert:#E23B2E;
+  --bg:#F4F7FB;  --surface:#FFFFFF;  --surface-2:#EDF2F9;  --border:#DDE5F0;
+  --text:#0B1F3A;  --text-muted:#5A6B85;
+  --on-dark:#FFFFFF;  --on-dark-muted:#A9C0DE;
+  --primary:#1B4F9C;  --primary-hover:#153E7C;  --focus:#38BDF8;
+  --whatsapp:#25D366;  --in-stock:#15803D;  --low-stock:#E23B2E;
+  --hero:linear-gradient(135deg,#0B1F3A 0%,#1B4F9C 100%);
+
+  /* the one accessible blue for text-sized links, since cyan fails on white */
+  --link:#0284C7;
+
+  --radius:12px;
+  --radius-btn:8px;
+  --shadow:0 1px 2px rgba(11,31,58,.06), 0 4px 12px rgba(11,31,58,.06);
+  --shadow-lift:0 2px 4px rgba(11,31,58,.08), 0 12px 28px rgba(11,31,58,.10);
+
+  --wrap:1140px;
+
+  --font-head:'Archivo', 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --font-body:'Manrope', 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --font-ar:'Noto Sans Arabic', 'Segoe UI', Tahoma, 'Geeza Pro', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (min-width: 700px) { body { font-size: 17px; } }
+
+/* Arabic: matched weights, and a face that renders Arabic properly. */
+html[lang="ar"] body,
+html[lang="ar"] .card-model,
+html[lang="ar"] h1, html[lang="ar"] h2, html[lang="ar"] h3 {
+  font-family: var(--font-ar);
+}
+html[lang="ar"] body { line-height: 1.75; }
+
+h1, h2, h3, .card-model, .price, .brand-text strong {
+  font-family: var(--font-head);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+html[lang="ar"] h1, html[lang="ar"] h2, html[lang="ar"] h3,
+html[lang="ar"] .card-model { letter-spacing: 0; font-weight: 700; }
+
+img { display: block; max-width: 100%; }
+
+a { color: var(--link); }
+
+/* the one focus ring, on everything interactive */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.icon { width: 18px; height: 18px; flex: none; }
+
+.wrap { width: 100%; max-width: var(--wrap); margin-inline: auto; padding-inline: 16px; }
+
+.skip {
+  position: absolute; inset-inline-start: -9999px; top: 0; z-index: 60;
+  background: var(--navy); color: var(--on-dark); padding: 10px 14px;
+  text-decoration: none; border-radius: 0 0 8px 8px;
+}
+.skip:focus { inset-inline-start: 0; }
+
+/* ---------- header ---------------------------------------------------- */
+
+.site-header {
+  position: sticky; top: 0; z-index: 30;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: saturate(180%) blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-row { display: flex; align-items: center; gap: 10px; padding-block: 10px; }
+
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--text); margin-inline-end: auto;
+}
+.brand-mark {
+  display: grid; place-items: center;
+  width: 38px; height: 38px; border-radius: 9px;
+  background: var(--navy); color: var(--on-dark);
+  font-family: var(--font-head); font-size: 12.5px; font-weight: 800; letter-spacing: 0.04em;
+}
+.brand-text strong { display: block; font-size: 16px; line-height: 1.2; }
+.brand-text small {
+  display: block; font-size: 10.5px; color: var(--text-muted);
+  letter-spacing: 0.08em; text-transform: uppercase; font-family: var(--font-body);
+}
+
+.header-actions { display: flex; align-items: center; gap: 8px; }
+
+.lang-btn {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  border-radius: 999px; padding: 7px 14px;
+  font-family: var(--font-body); font-size: 13px; font-weight: 700; cursor: pointer;
+  white-space: nowrap;
+}
+.lang-btn:hover { border-color: var(--royal); color: var(--royal); }
+
+.site-nav { background: var(--surface); border-top: 1px solid var(--surface-2); }
+.nav-row { display: flex; gap: 22px; padding-block: 9px; }
+.site-nav a {
+  color: var(--text-muted); text-decoration: none;
+  font-size: 14px; font-weight: 700; padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+}
+.site-nav a:hover { color: var(--royal); }
+.site-nav a.is-current { color: var(--navy); border-bottom-color: var(--cyan); }
+
+/* ---------- buttons --------------------------------------------------- */
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 18px; border: 1px solid transparent; border-radius: var(--radius-btn);
+  font-family: var(--font-body); font-size: 15px; font-weight: 700;
+  text-decoration: none; cursor: pointer; white-space: nowrap;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+
+.btn-primary { background: var(--primary); color: var(--on-dark); }
+.btn-primary:hover { background: var(--primary-hover); }
+
+.btn-wa { background: var(--whatsapp); color: #FFFFFF; }
+.btn-wa:hover { background: #1EBE5B; }
+
+.btn-ghost { background: var(--surface); border-color: var(--border); color: var(--text); }
+.btn-ghost:hover { border-color: var(--royal); color: var(--royal); }
+
+.btn-sm { padding: 8px 13px; font-size: 13.5px; border-radius: 999px; }
+
+/* on the dark hero */
+.btn-onhero { background: var(--surface); color: var(--navy); }
+.btn-onhero:hover { background: var(--surface-2); }
+
+/* ---------- hero ------------------------------------------------------ */
+
+.hero {
+  background: var(--hero);
+  color: var(--on-dark);
+  padding-block: 34px 38px;
+}
+.hero-inner { max-width: 62ch; }
+
+.hero-eyebrow {
+  margin: 0 0 10px;
+  font-family: var(--font-body);
+  font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--cyan);
+}
+html[lang="ar"] .hero-eyebrow { text-transform: none; letter-spacing: 0.04em; font-size: 13px; }
+
+.hero h1 {
+  margin: 0 0 12px;
+  font-size: clamp(28px, 7vw, 44px); line-height: 1.14;
+  color: var(--on-dark);
+}
+.hero-text { margin: 0 0 20px; color: var(--on-dark-muted); font-size: 16.5px; }
+
+.hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; }
+
+.trust { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.trust li {
+  display: inline-flex; align-items: center;
+  font-size: 13px; font-weight: 600; color: var(--on-dark);
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px; padding: 6px 13px;
+}
+.trust li::before {
+  content: ""; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--cyan); margin-inline-end: 8px;
+}
+
+/* ---------- category chips -------------------------------------------- */
+
+.filters {
+  display: flex; gap: 8px; overflow-x: auto; padding-block: 18px 4px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.filters::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex: none;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
+  border-radius: 999px; padding: 8px 15px;
+  font-family: var(--font-body); font-size: 13.5px; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.chip:hover { border-color: var(--royal); color: var(--royal); }
+.chip.is-on { background: var(--navy); border-color: var(--navy); color: var(--on-dark); }
+
+/* ---------- sections and grid ----------------------------------------- */
+
+main { padding-bottom: 40px; }
+
+.group { margin-block: 22px 34px; }
+.group-title {
+  margin: 0 0 16px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 20px; color: var(--navy);
+}
+
+.grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 18px; } }
+@media (min-width: 980px) { .grid { grid-template-columns: repeat(3, 1fr); gap: 20px; } }
+
+/* ---------- product card ---------------------------------------------- */
+
+.card {
+  display: flex; flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: box-shadow .18s ease, transform .18s ease;
+}
+@media (hover: hover) {
+  .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); }
+}
+
+.card-photo { position: relative; aspect-ratio: 4 / 3; background: var(--surface-2); }
+.card-photo img { width: 100%; height: 100%; object-fit: contain; padding: 12px; }
+
+/* stock badge, top-right of the card */
+.stock {
+  position: absolute; inset-block-start: 10px; inset-inline-end: 10px;
+  font-family: var(--font-body); font-size: 12px; font-weight: 700; line-height: 1.3;
+  padding: 5px 10px; border-radius: 999px;
+}
+.stock-low { background: var(--low-stock); color: #FFFFFF; }
+.stock-in  { background: rgba(255, 255, 255, 0.92); color: var(--in-stock); }
+
+.card-body { display: flex; flex-direction: column; flex: 1; padding: 15px 16px 16px; }
+
+.card-model { margin: 0 0 4px; font-size: 17px; color: var(--navy); }
+.card-spec {
+  margin: 0; font-size: 14px; color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+.tag {
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  background: var(--surface-2); border-radius: 6px; padding: 4px 9px;
+}
+.tag-touch { color: var(--royal); }
+
+/* price: the loudest thing on the card after the photo */
+.price {
+  margin: 14px 0 14px; line-height: 1;
+  font-size: 28px; color: var(--navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.card .btn-wa { margin-top: auto; width: 100%; }
+
+/* Latin model names, Latin specs and prices are marked dir="ltr" in the markup
+   so the slashes and the numbers do not get shuffled on the Arabic page, while
+   an Arabic spec from the sheet is marked dir="rtl". Either way the text lines
+   up with the side the page reads from, so the card never looks broken. */
+html[dir="rtl"] .card-model,
+html[dir="rtl"] .card-spec,
+html[dir="rtl"] .price { text-align: right; }
+
+/* ---------- states ---------------------------------------------------- */
+
+.state { padding-block: 30px; color: var(--text-muted); font-size: 15px; }
+
+.notice {
+  max-width: 640px; margin-block: 24px 40px; padding: 24px 20px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.notice h2 { margin: 0 0 8px; font-size: 20px; color: var(--navy); }
+.notice p { margin: 0 0 16px; color: var(--text-muted); }
+.notice-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; }
+
+/* ---------- about page prose ------------------------------------------ */
+
+.page-title { margin-block: 28px 4px; font-size: clamp(27px, 6.4vw, 38px); color: var(--navy); }
+
+.prose { max-width: 68ch; padding-bottom: 28px; }
+.prose h2 { margin: 30px 0 8px; font-size: 20px; color: var(--navy); }
+.prose h3 { margin: 0 0 6px; font-size: 17px; font-weight: 700; color: var(--navy); }
+.prose p  { margin: 0 0 13px; color: var(--text-muted); }
+.prose a  { color: var(--link); }
+
+.faq-item { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* ---------- footer ---------------------------------------------------- */
+
+.site-footer {
+  background: var(--navy); color: var(--on-dark);
+  padding-block: 34px 40px;
+}
+.site-footer h2 {
+  margin: 0 0 14px; font-size: 12.5px; font-weight: 700; color: var(--on-dark-muted);
+  text-transform: uppercase; letter-spacing: 0.11em; font-family: var(--font-body);
+}
+html[lang="ar"] .site-footer h2 { text-transform: none; letter-spacing: 0; font-size: 14px; }
+
+.footer-cols { display: grid; gap: 26px; grid-template-columns: 1fr; }
+@media (min-width: 700px) { .footer-cols { grid-template-columns: 1fr 1fr; gap: 40px; } }
+
+.social-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.social-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 14px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--on-dark); text-decoration: none;
+  font-size: 14px; font-weight: 700;
+}
+.social-link:hover { background: rgba(255, 255, 255, 0.16); border-color: var(--cyan); }
+.social-link .icon { color: var(--cyan); }
+
+.footer-links { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.footer-links a { color: var(--on-dark); text-decoration: none; font-weight: 700; font-size: 15px; }
+.footer-links a:hover { color: var(--cyan); }
+
+.footer-note {
+  margin: 26px 0 6px; color: var(--on-dark-muted); font-size: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14); padding-top: 20px;
+}
+.footer-legal { margin: 0; color: var(--on-dark-muted); font-size: 13px; opacity: .8; }
+
+/* ---------- sticky WhatsApp bar, phones only -------------------------- */
+
+.sticky-cta {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 40;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.97);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+}
+.sticky-cta .btn { width: 100%; }
+
+@media (min-width: 768px) { .sticky-cta { display: none; } }
+@media (max-width: 767px) { body { padding-bottom: 78px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
