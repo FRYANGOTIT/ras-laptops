@@ -5,8 +5,8 @@ business laptops online in Lebanon.
 
 ## Pages
 
-- https://raslaptops.com/ — current stock: model, specification and price for every unit available.
-- https://raslaptops.com/about.html — company details, warranty, delivery, payment, inspection, FAQ.
+- https://fryangotit.github.io/ras-laptops/ — current stock: model, specification and price for every unit available.
+- https://fryangotit.github.io/ras-laptops/about.html — company details, warranty, delivery, payment, inspection, FAQ.
 
 ## What is sold
 

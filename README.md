@@ -199,8 +199,9 @@ two do not drift apart.
 
 ## 9. Change the domain
 
-The site currently points at `https://raslaptops.com`. When you have the real domain,
-do a find-and-replace for `raslaptops.com` across the whole folder. It appears in:
+The site is live at `https://fryangotit.github.io/ras-laptops` (GitHub Pages). When you buy
+the real domain, do a find-and-replace for `fryangotit.github.io/ras-laptops` across the
+whole folder, swapping in your domain. It appears in:
 
 - `app.js` — `CONFIG.siteUrl`
 - `index.html` and `about.html` — the canonical link and the Open Graph tags
@@ -210,6 +211,14 @@ do a find-and-replace for `raslaptops.com` across the whole folder. It appears i
 
 These are what search engines and AI assistants use to link back to you, so it is
 worth doing properly once.
+
+**One caveat while you are on a github.io address:** `robots.txt` is only honoured at
+the root of a domain. On a GitHub Pages project site the file ends up at
+`fryangotit.github.io/ras-laptops/robots.txt`, which crawlers ignore — they only read
+`fryangotit.github.io/robots.txt`, which belongs to your account, not this repo. The
+file is harmless where it is and starts working the moment you attach a custom domain.
+Everything else — the sitemap, `llms.txt`, the structured data and the meta tags —
+works fine on the github.io address today.
 
 ---
 
