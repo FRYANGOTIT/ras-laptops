@@ -42,7 +42,7 @@ const CONFIG = {
   whatsappDisplay: '+961 76 792 834',
 
   /* >>> PASTE YOUR PUBLISHED GOOGLE SHEET CSV LINK BETWEEN THESE QUOTES <<< */
-  sheetCsvUrl: 'https://docs.google.com/spreadsheets/d/1DNb3tbtvwbNJ4BFg4YGWaA7Op5xjaq_V0FhOGQxdnc4/edit',
+  sheetCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQD16eiUn9kopdnMEbwTZf9DnR8oBj3YewMiGtdh1JrOMl6RGFM-XEG4rqHGhLubJtQBf9bUE8Qhrrz/pub?gid=0&single=true&output=csv',
 
   /* Folder that holds the product photos. Keep the trailing slash. */
   imagesPath: 'images/',
