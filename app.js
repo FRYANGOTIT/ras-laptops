@@ -67,7 +67,7 @@ const CONFIG = {
     mark: 'RAS',
 
     /* The shop name printed next to the logo. */
-    name: 'RAS Solutions',
+    name: 'RAS',
 
     /* Set to false if your logo picture already has the name written in it. */
     showName: true,
