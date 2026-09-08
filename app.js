@@ -58,10 +58,10 @@ const CONFIG = {
   logo: {
     /* Filename only, from the images/ folder. e.g. 'ras-logo.png'
        Empty means: use the lettermark below. */
-    image: '',
+    image: 'logo.png',
 
     /* How tall that picture is in the header, in pixels. */
-    imageHeight: 34,
+    imageHeight: 42,
 
     /* The lettermark, used when no image is set. Two to four letters. */
     mark: 'RAS',
