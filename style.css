@@ -109,6 +109,9 @@ a { color: var(--link); }
   background: var(--navy); color: var(--on-dark);
   font-family: var(--font-head); font-size: 12.5px; font-weight: 800; letter-spacing: 0.04em;
 }
+/* a logo picture set through CONFIG.logo.image; height comes from the config */
+.brand-logo { width: auto; max-height: 44px; object-fit: contain; flex: none; }
+
 .brand-text strong { display: block; font-size: 16px; line-height: 1.2; }
 .brand-text small {
   display: block; font-size: 10.5px; color: var(--text-muted);

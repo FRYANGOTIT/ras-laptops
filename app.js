@@ -38,6 +38,44 @@ const CONFIG = {
     tiktok: ''
   },
 
+  /* ===========================================================================
+     YOUR LOGO
+
+     Two ways to change it, both doable from github.com without a code editor:
+
+     A. Swap the picture files. Go to the images/ folder on GitHub,
+        "Add file" -> "Upload files", and upload a file with the SAME NAME as
+        the one you are replacing. No code change at all:
+          images/favicon.svg   the little icon in the browser tab
+          images/logo.png      the icon when someone saves the site to a phone
+          images/og-cover.png  the picture shown when a link is pasted into
+                               WhatsApp, Facebook or Instagram (1200 x 630)
+
+     B. Put your own logo in the header. Upload it to images/, then write just
+        the filename on the "image" line below. Leave "image" empty and the
+        header shows the lettermark instead.
+     =========================================================================== */
+  logo: {
+    /* Filename only, from the images/ folder. e.g. 'ras-logo.png'
+       Empty means: use the lettermark below. */
+    image: '',
+
+    /* How tall that picture is in the header, in pixels. */
+    imageHeight: 34,
+
+    /* The lettermark, used when no image is set. Two to four letters. */
+    mark: 'RAS',
+
+    /* The shop name printed next to the logo. */
+    name: 'RAS Solutions',
+
+    /* Set to false if your logo picture already has the name written in it. */
+    showName: true,
+
+    /* The small line under the name. */
+    tagline: { en: 'Laptops · Lebanon', ar: 'لابتوبات · لبنان' }
+  },
+
   /* The phone number as you want it printed on the page. */
   whatsappDisplay: '+961 76 792 834',
 
@@ -715,6 +753,33 @@ function renderSocial() {
   });
 }
 
+/* Draws the logo and the shop name into every [data-brand] link, from
+   CONFIG.logo. The HTML holds a copy of the default so the header still reads
+   correctly for a crawler that does not run JavaScript. */
+function renderBrand() {
+  var l = CONFIG.logo || {};
+  var badge;
+
+  if (l.image) {
+    var h = parseInt(l.imageHeight, 10) || 34;
+    badge = '<img class="brand-logo" src="' + esc(CONFIG.imagesPath + l.image) + '" ' +
+            'alt="' + esc(l.name || '') + '" style="height:' + h + 'px">';
+  } else {
+    badge = '<span class="brand-mark" aria-hidden="true">' + esc(l.mark || '') + '</span>';
+  }
+
+  var text = '';
+  if (l.showName !== false) {
+    var tagline = l.tagline ? (l.tagline[LANG] || l.tagline.en || '') : '';
+    text = '<span class="brand-text"><strong>' + esc(l.name || '') + '</strong>' +
+           (tagline ? '<small>' + esc(tagline) + '</small>' : '') + '</span>';
+  }
+
+  document.querySelectorAll('[data-brand]').forEach(function (el) {
+    el.innerHTML = badge + text;
+  });
+}
+
 /* Swap every piece of chrome to the current language. */
 function renderChrome() {
   var s = t();
@@ -751,6 +816,7 @@ function renderChrome() {
     el.hidden = (el.getAttribute('data-lang-block') !== LANG);
   });
 
+  renderBrand();
   renderSocial();
 }
 
@@ -970,7 +1036,7 @@ function organizationNode() {
     description: 'Online seller of open box, ex-corporate business laptops in Lebanon. ' +
                  '3-month warranty, free delivery all over Lebanon, cash on delivery or Whish / OMT.',
     url: CONFIG.siteUrl + '/',
-    logo: CONFIG.siteUrl + '/images/logo.png',
+    logo: CONFIG.siteUrl + '/' + CONFIG.imagesPath + (CONFIG.logo.image || 'logo.png'),
     image: CONFIG.siteUrl + '/images/og-cover.png',
     sameAs: sameAs,
     areaServed: { '@type': 'Country', name: 'Lebanon' },

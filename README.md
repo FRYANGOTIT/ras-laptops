@@ -53,7 +53,80 @@ you like.
 
 ---
 
-## 2. Connect the Google Sheet
+## 2. Change the logo
+
+There are really two logos, and they are changed in different ways.
+
+### The picture files — no code, just upload
+
+These three files control the icons. **Replace a file with one of your own that
+has the exact same name and nothing else needs changing.**
+
+| file                  | where it shows up                                          |
+| --------------------- | ---------------------------------------------------------- |
+| `images/favicon.svg`  | the small icon in the browser tab                          |
+| `images/logo.png`     | the icon when someone saves the site to their phone screen, and the logo search engines and AI assistants read |
+| `images/og-cover.png` | the picture that appears when your link is pasted into WhatsApp, Instagram or Facebook. Make it 1200 × 630 |
+
+**Doing it on github.com, no software needed:**
+
+1. Open the repo and click into the **`images`** folder.
+2. Click **Add file → Upload files**.
+3. Drag your file in. It must have the same name as the one it replaces —
+   `logo.png` replaces `logo.png`.
+4. Scroll down, write a short note like "new logo", click **Commit changes**.
+5. Wait about a minute. GitHub Pages rebuilds the site on its own.
+
+If your file has a different name, GitHub will add it as a *second* file instead
+of replacing the first, and nothing will change on the site. Same name is the
+whole trick.
+
+> Browsers hold on to a favicon hard. If the tab icon looks unchanged, open the
+> site in a private window before assuming it did not work.
+
+### The logo in the header — one config block
+
+The header logo is set in `CONFIG.logo`, at the top of `app.js`:
+
+```js
+logo: {
+  image: '',                    // filename from images/, e.g. 'ras-logo.png'
+  imageHeight: 34,              // how tall it is in the header, in pixels
+  mark: 'RAS',                  // the lettermark, used when image is empty
+  name: 'RAS Solutions',        // the name printed beside it
+  showName: true,               // false if your picture already has the name in it
+  tagline: { en: 'Laptops · Lebanon', ar: 'لابتوبات · لبنان' }
+}
+```
+
+**Leave `image` empty** and the header shows the navy **RAS** lettermark. Change
+`mark` to change the letters.
+
+**To use a picture instead**, upload it into `images/` and put just the filename
+between the quotes:
+
+```js
+image: 'ras-logo.png',
+```
+
+A PNG with a transparent background works best. Around 200px tall is plenty —
+`imageHeight` scales it down for the header. If your logo already has "RAS
+Solutions" written inside it, set `showName: false` so the name is not printed
+twice.
+
+**Editing `app.js` on github.com:** open the file, click the pencil icon at the
+top right, change the line, then **Commit changes** at the bottom. Same one
+minute wait for the site to rebuild.
+
+One thing to know: `index.html`, `about.html` and `estimate.html` each hold a
+plain copy of the default logo and name. That copy is what a search engine or AI
+crawler that does not run JavaScript sees. It does not affect what visitors see —
+`CONFIG.logo` always wins in the browser — but if you rename the business, it is
+worth updating those three files too so the crawlers agree with the page.
+
+---
+
+## 3. Connect the Google Sheet
 
 **Publish the sheet as CSV**
 
@@ -98,7 +171,7 @@ Notes:
 
 ---
 
-## 3. Categories
+## 4. Categories
 
 The sections of the shop are a list in `CONFIG.categories`:
 
@@ -128,7 +201,7 @@ with stock. With one section they would just be noise.
 
 ---
 
-## 4. Prices
+## 5. Prices
 
 Every price on the site is written by one setting:
 
@@ -142,7 +215,7 @@ your ads.
 
 ---
 
-## 5. Stock badges
+## 6. Stock badges
 
 Driven by the `stock` column, with no extra work:
 
@@ -158,7 +231,7 @@ on the site, so a red badge always means the same thing.
 
 ---
 
-## 6. The price estimator
+## 7. The price estimator
 
 `estimate.html` lets a visitor price their own laptop. Every number it uses lives
 in **`pricing-model.js`** — that is the only file to edit, and it is commented
@@ -225,7 +298,7 @@ buy-price calculator publishes your margin.
 
 ---
 
-## 7. Add a photo
+## 8. Add a photo
 
 1. Name the file after the product, lowercase, with dashes: `latitude-7430.jpg`.
 2. Drop it into the `images/` folder.
@@ -240,7 +313,7 @@ shows a neutral placeholder instead of a broken image.
 
 ---
 
-## 8. Hide a product
+## 9. Hide a product
 
 Set its `stock` to **0**, or clear the cell.
 
@@ -249,7 +322,7 @@ the site on the next page load. Put a number back in and it returns.
 
 ---
 
-## 9. Change the wording
+## 10. Change the wording
 
 All interface text is in the `STRINGS` object near the top of `app.js`, with an `en`
 block and an `ar` block side by side. Edit the line you want, in both languages.
@@ -266,7 +339,7 @@ two do not drift apart.
 
 ---
 
-## 10. Change the domain
+## 11. Change the domain
 
 The site is live at `https://fryangotit.github.io/ras-laptops` (GitHub Pages). When you buy
 the real domain, do a find-and-replace for `fryangotit.github.io/ras-laptops` across the
@@ -291,7 +364,7 @@ works fine on the github.io address today.
 
 ---
 
-## 11. Previewing on your own machine
+## 12. Previewing on your own machine
 
 Opening `index.html` by double-clicking mostly works, **except** the product list:
 browsers block a page opened from your hard drive from fetching the Google Sheet. You
