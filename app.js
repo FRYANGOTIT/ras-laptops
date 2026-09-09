@@ -88,7 +88,7 @@ const CONFIG = {
   /* Your real domain, no trailing slash. It is what the structured data points
      at, and that structured data is what AI assistants and search engines read.
      If you change this, also change it in sitemap.xml and robots.txt. */
-  siteUrl: 'https://fryangotit.github.io/ras-laptops',
+  siteUrl: 'https://raslaptops.com',
 
   /* How every price on the site is written. {n} is the number.
      '${n}' gives $330.   '{n}$' gives 330$.
@@ -1134,7 +1134,7 @@ function faqNode() {
   if (!items.length) return null;
   return {
     '@type': 'FAQPage',
-    '@id': CONFIG.siteUrl + '/about.html#faq',
+    '@id': CONFIG.siteUrl + '/about#faq',
     mainEntity: items
   };
 }

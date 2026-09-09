@@ -339,14 +339,26 @@ two do not drift apart.
 
 ---
 
-## 11. Change the domain
+## 11. Hosting and the domain
 
-The site is live at `https://fryangotit.github.io/ras-laptops` (GitHub Pages). When you buy
-the real domain, do a find-and-replace for `fryangotit.github.io/ras-laptops` across the
-whole folder, swapping in your domain. It appears in:
+The site is live at **https://raslaptops.com**, served by **Cloudflare Pages**,
+which redeploys automatically on every push to `main`. There is no build step:
+Cloudflare just copies the files.
+
+If you ever set it up again from scratch, the Cloudflare Pages build settings are:
+
+| field | value |
+| ----- | ----- |
+| Production branch | `main` |
+| Framework preset | None |
+| Build command | *leave empty* |
+| Build output directory | `/` |
+
+**Changing the domain later.** Do a find-and-replace for `raslaptops.com` across
+the whole folder, swapping in the new one. It appears in:
 
 - `app.js` — `CONFIG.siteUrl`
-- `index.html` and `about.html` — the canonical link and the Open Graph tags
+- `index.html`, `about.html`, `estimate.html` — the canonical link and the Open Graph tags
 - `sitemap.xml`
 - `robots.txt`
 - `llms.txt`
@@ -354,13 +366,24 @@ whole folder, swapping in your domain. It appears in:
 These are what search engines and AI assistants use to link back to you, so it is
 worth doing properly once.
 
-**One caveat while you are on a github.io address:** `robots.txt` is only honoured at
-the root of a domain. On a GitHub Pages project site the file ends up at
-`fryangotit.github.io/ras-laptops/robots.txt`, which crawlers ignore — they only read
-`fryangotit.github.io/robots.txt`, which belongs to your account, not this repo. The
-file is harmless where it is and starts working the moment you attach a custom domain.
-Everything else — the sitemap, `llms.txt`, the structured data and the meta tags —
-works fine on the github.io address today.
+**A note on `.html` in links.** Cloudflare Pages serves `/about.html` as a
+redirect to `/about`. The links inside the pages deliberately keep the `.html`
+form, because that also works when you open the files straight off your hard
+drive. The canonical tags, the sitemap and `llms.txt` use the short `/about`
+form instead, since that is the address that actually answers, and it is what
+search engines should be told to index. Both are correct; they are just aimed at
+different readers.
+
+**`robots.txt` works properly now.** On the old GitHub Pages address it sat at
+`/ras-laptops/robots.txt`, which crawlers ignore — they only read the file at a
+domain root. On `raslaptops.com` it is read as intended, so the explicit welcome
+to GPTBot, ClaudeBot, PerplexityBot, Google-Extended and Bingbot is now actually
+doing something.
+
+**Turn off the old GitHub Pages site** if you have not already: repo Settings →
+Pages → Source → None. Otherwise the same content answers on two addresses. The
+canonical tags point at raslaptops.com so it will not really hurt you, but there
+is no reason to serve a second copy.
 
 ---
 

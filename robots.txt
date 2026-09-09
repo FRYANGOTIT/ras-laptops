@@ -1,4 +1,4 @@
-# RAS Solutions — https://fryangotit.github.io/ras-laptops
+# RAS Solutions — https://raslaptops.com
 # AI assistants and search engines are welcome to read, index and cite this site.
 
 User-agent: GPTBot
@@ -43,4 +43,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://fryangotit.github.io/ras-laptops/sitemap.xml
+Sitemap: https://raslaptops.com/sitemap.xml

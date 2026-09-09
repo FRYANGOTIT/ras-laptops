@@ -5,9 +5,9 @@ business laptops online in Lebanon.
 
 ## Pages
 
-- https://fryangotit.github.io/ras-laptops/ — current stock: model, specification and price for every unit available.
-- https://fryangotit.github.io/ras-laptops/about.html — company details, warranty, delivery, payment, inspection, FAQ.
-- https://fryangotit.github.io/ras-laptops/estimate.html — free laptop price estimator for Lebanon: pick processor, generation, RAM, storage, graphics, screen, battery and condition, get an estimated value range in USD.
+- https://raslaptops.com/ — current stock: model, specification and price for every unit available.
+- https://raslaptops.com/about — company details, warranty, delivery, payment, inspection, FAQ.
+- https://raslaptops.com/estimate — free laptop price estimator for Lebanon: pick processor, generation, RAM, storage, graphics, screen, battery and condition, get an estimated value range in USD.
 
 ## What is sold
 
