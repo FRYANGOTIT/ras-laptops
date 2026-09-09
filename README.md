@@ -161,6 +161,8 @@ https://docs.google.com/spreadsheets/d/e/2PACX-1vQxxxxxxxxxxxx/pub?gid=0&single=
 | `touch`    | `yes`, or leave blank                                |
 | `note_en`  | optional, e.g. `two colors`                          |
 | `note_ar`  | optional, the Arabic version of the note             |
+| `variant_en` | optional, see "Two versions of the same laptop" below |
+| `variant_ar` | optional, the Arabic version of that label          |
 
 Notes:
 
@@ -168,6 +170,44 @@ Notes:
 - `touch = yes` adds the tag **Touch, flips into tablet** / **تاتش وبينفتل**.
 - Cheapest first inside each section.
 - If `spec_ar` or `note_ar` is empty, the Arabic page falls back to the English one.
+
+### Two versions of the same laptop
+
+If you stock the same model in more than one configuration — a Latitude 7490
+with an i5 and another with an i7 — **give each one its own row, with the same
+`model`**. They will appear as a single card with a button for each, instead of
+two cards sitting side by side that look almost identical.
+
+```
+category | model              | spec_en                        | price | stock
+laptop   | Dell Latitude 7490 | i5 8th gen / 8GB / 256GB / 14" | 230   | 3
+laptop   | Dell Latitude 7490 | i7 8th gen / 8GB / 256GB / 14" | 250   | 2
+```
+
+The card opens on the cheapest one. Clicking a button switches the spec, the
+price, the stock badge, the photo, and the WhatsApp message — which names the
+exact configuration, so a customer asking about the i7 does not have to be asked
+which one they meant.
+
+**The button labels write themselves.** The two specs above differ only in the
+first part, so the buttons read **i5 8th gen** and **i7 8th gen**. Two rows
+differing only in memory give you **16GB** and **32GB**. You do not have to do
+anything for this.
+
+If you want to name them yourself, fill in `variant_en` and `variant_ar` — for
+example `Standard` and `Pro`. Fill them in for **every** row of that model or
+they are ignored and the automatic labels are used instead.
+
+**Each row keeps its own photo.** If your ad image has the price printed on it,
+give each variant row its own image filename so the picture always matches the
+price on the card.
+
+**Stock is per row.** One variant can be sold out while the other is still
+listed: set that row's `stock` to 0 and only the remaining one shows, with the
+buttons disappearing since there is nothing left to choose between.
+
+To switch all of this off and go back to one card per row, set
+`groupVariantsByModel: false` in `CONFIG`.
 
 ---
 

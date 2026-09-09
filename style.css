@@ -474,3 +474,17 @@ html[lang="ar"] .est-breakdown th { text-transform: none; letter-spacing: 0; fon
 .est-breakdown td:first-child { color: var(--text); font-weight: 600; white-space: nowrap; }
 .est-breakdown .num { text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .est-breakdown .row-sum td { font-weight: 700; color: var(--navy); background: var(--surface-2); }
+
+/* ---------- variant buttons ------------------------------------------- */
+
+.variants { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+.vpill {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
+  border-radius: 999px; padding: 5px 11px;
+  font-family: var(--font-body); font-size: 12.5px; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.vpill:hover { border-color: var(--royal); color: var(--royal); }
+.vpill.is-on { background: var(--navy); border-color: var(--navy); color: var(--on-dark); }

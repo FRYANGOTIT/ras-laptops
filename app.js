@@ -96,6 +96,11 @@ const CONFIG = {
      site always matches the way prices are written in your ads. */
   priceFormat: '${n}',
 
+  /* Rows that share the same model become ONE card with a set of buttons to
+     switch between them, instead of several near-identical cards side by side.
+     Set to false to go back to one card per row. */
+  groupVariantsByModel: true,
+
   /* At this many units or fewer, the stock badge turns red. */
   lowStockAt: 2,
 
@@ -174,6 +179,7 @@ const STRINGS = {
     altSuffix: 'open box, ex-corporate business laptop from RAS Solutions in Lebanon',
     askOnWhatsapp: 'Ask on WhatsApp',
     askAria: 'Ask about this on WhatsApp',
+    variantsAria: 'Choose a configuration',
     inStock: 'In stock',
     lastOne: 'Last one',
     unitsLeft: function (n) { return n + ' left'; },
@@ -265,6 +271,7 @@ const STRINGS = {
     altSuffix: 'لابتوب أوبن بوكس جايي من شركات، من RAS Solutions بلبنان',
     askOnWhatsapp: 'اسألنا عالواتساب',
     askAria: 'اسأل عن هيدا عالواتساب',
+    variantsAria: 'اختار المواصفات',
     inStock: 'متوفّر',
     lastOne: 'آخر قطعة',
     unitsLeft: function (n) { return 'باقي ' + n; },
@@ -374,7 +381,9 @@ function parseCSV(text) {
 
 /* The column names we expect, in the documented order. */
 var COLUMNS = ['category', 'model', 'spec_en', 'spec_ar', 'price', 'image',
-               'stock', 'touch', 'note_en', 'note_ar'];
+               'stock', 'touch', 'note_en', 'note_ar',
+               /* optional: only needed to name a variant button yourself */
+               'variant_en', 'variant_ar'];
 
 /* Turn the parsed rows into objects. Columns are matched by their header name
    when the header row is recognisable, and by position otherwise, so adding a
@@ -415,7 +424,9 @@ function rowsToProducts(rows) {
       stock:    toNumber(cell('stock')),
       touch:    isYes(cell('touch')),
       note_en:  cell('note_en'),
-      note_ar:  cell('note_ar')
+      note_ar:  cell('note_ar'),
+      variant_en: cell('variant_en'),
+      variant_ar: cell('variant_ar')
     };
   }).filter(function (p) { return p.model !== ''; });
 }
@@ -564,6 +575,86 @@ function socialLinks() {
 }
 
 /* -----------------------------------------------------------------------------
+   6b) Variants
+
+   Two rows in the sheet with the same model - say a Latitude 7490 with an i5
+   and another with an i7 - are the same laptop in two configurations. They are
+   collected into one card with a button for each, rather than two cards sitting
+   side by side that look almost identical.
+----------------------------------------------------------------------------- */
+
+/* Which variant is showing on each card, keyed by the model slug. Nothing is
+   stored on the visitor's phone; a reload starts from the cheapest again. */
+var VARIANT = {};
+
+/* -> [{ model, key, variants: [rows, cheapest first] }], cheapest group first */
+function groupVariants(list) {
+  var byModel = {};
+  var order = [];
+
+  list.forEach(function (p) {
+    var key = CONFIG.groupVariantsByModel
+      ? p.model.trim().toLowerCase()
+      : p.model.trim().toLowerCase() + '||' + p.price + '||' + p.spec_en;
+    if (!byModel[key]) { byModel[key] = []; order.push(key); }
+    byModel[key].push(p);
+  });
+
+  var byPrice = function (a, b) { return a.price - b.price; };
+
+  return order.map(function (key) {
+    var variants = byModel[key].slice().sort(byPrice);
+    return { model: variants[0].model, key: slug(variants[0].model), variants: variants };
+  }).sort(function (a, b) { return a.variants[0].price - b.variants[0].price; });
+}
+
+function selectedIndex(group) {
+  var i = VARIANT[group.key];
+  return (typeof i === 'number' && group.variants[i]) ? i : 0;
+}
+
+/* A short label for each button.
+
+   If the sheet has variant_en / variant_ar filled in, those win. Otherwise the
+   label is worked out by comparing the spec strings and keeping only the parts
+   that differ, so
+     "i5 8th gen / 8GB / 256GB / 14""  and  "i7 8th gen / 8GB / 256GB / 14""
+   become just  "i5 8th gen"  and  "i7 8th gen". */
+function variantLabelsFor(group) {
+  var vs = group.variants;
+
+  var fromSheet = vs.map(function (p) {
+    return (LANG === 'ar' && p.variant_ar) ? p.variant_ar : (p.variant_en || '');
+  });
+  if (fromSheet.every(function (l) { return l !== ''; })) return fromSheet;
+
+  var parts = vs.map(function (p) {
+    return String(specFor(p)).split('/').map(function (x) { return x.trim(); });
+  });
+
+  var sameLength = parts.every(function (a) { return a.length === parts[0].length; });
+  if (sameLength && parts[0].length > 1) {
+    var differing = [];
+    for (var i = 0; i < parts[0].length; i++) {
+      var first = parts[0][i];
+      if (parts.some(function (a) { return a[i] !== first; })) differing.push(i);
+    }
+    if (differing.length) {
+      var labels = parts.map(function (a) {
+        return differing.map(function (i) { return a[i]; }).join(' / ');
+      });
+      var unique = {};
+      labels.forEach(function (l) { unique[l] = 1; });
+      /* only usable if it actually tells the variants apart */
+      if (Object.keys(unique).length === labels.length) return labels;
+    }
+  }
+
+  /* last resort: the price always distinguishes them */
+  return vs.map(function (p) { return priceText(p); });
+}
+
+/* -----------------------------------------------------------------------------
    7) Rendering
 ----------------------------------------------------------------------------- */
 
@@ -580,23 +671,24 @@ function stockBadgeHTML(p) {
   return '<span class="stock stock-in">' + esc(s.inStock) + '</span>';
 }
 
-/* One product card. */
-function cardHTML(p) {
+/* One product card. Takes a variant group, not a single row. */
+function cardHTML(group) {
   var s = t();
+  var idx = selectedIndex(group);
+  var p = group.variants[idx];
+  var many = group.variants.length > 1;
+  var labels = many ? variantLabelsFor(group) : [];
+
   var spec = specFor(p);
   var note = noteFor(p);
-  var src = CONFIG.imagesPath + p.image;
-
-  /* The alt text is read out by screen readers and by AI crawlers, so it
-     carries the model and the spec, not just "laptop photo". */
   var alt = p.model + (spec ? ', ' + spec : '') + ' — ' + s.altSuffix;
 
   var html = '';
-  html += '<article class="card" id="p-' + esc(slug(p.model)) + '">';
+  html += '<article class="card" id="p-' + esc(group.key) + '" data-group="' + esc(group.key) + '">';
 
   html += '<div class="card-photo">';
-  html += '<img src="' + esc(p.image ? src : IMAGE_PLACEHOLDER) + '" alt="' + esc(alt) + '" ' +
-          'loading="lazy" decoding="async" width="400" height="300">';
+  html += '<img src="' + esc(p.image ? CONFIG.imagesPath + p.image : IMAGE_PLACEHOLDER) + '" ' +
+          'alt="' + esc(alt) + '" loading="lazy" decoding="async" width="400" height="300">';
   html += stockBadgeHTML(p);
   html += '</div>';
 
@@ -604,6 +696,15 @@ function cardHTML(p) {
   html += '<h3 class="card-model" dir="' + dirFor(p.model) + '">' + esc(p.model) + '</h3>';
   if (spec) {
     html += '<p class="card-spec" dir="' + dirFor(spec) + '">' + esc(spec) + '</p>';
+  }
+
+  if (many) {
+    html += '<div class="variants" role="group" aria-label="' + esc(s.variantsAria) + '">' +
+      group.variants.map(function (v, i) {
+        return '<button type="button" class="vpill' + (i === idx ? ' is-on' : '') + '" ' +
+               'data-variant="' + i + '" aria-pressed="' + (i === idx) + '" ' +
+               'dir="' + dirFor(labels[i]) + '">' + esc(labels[i]) + '</button>';
+      }).join('') + '</div>';
   }
 
   if (p.touch || note) {
@@ -614,8 +715,12 @@ function cardHTML(p) {
   }
 
   html += '<p class="price" dir="ltr">' + esc(priceText(p)) + '</p>';
-  html += '<a class="btn btn-wa" href="' + esc(whatsappLink(s.waProduct(p.model))) + '" ' +
-          'target="_blank" rel="noopener" aria-label="' + esc(s.askAria + ': ' + p.model) + '">' +
+
+  /* the message names the exact configuration, so a reply does not have to
+     start by asking which one they meant */
+  var asking = p.model + (many ? ' (' + labels[idx] + ')' : '');
+  html += '<a class="btn btn-wa" href="' + esc(whatsappLink(s.waProduct(asking))) + '" ' +
+          'target="_blank" rel="noopener" aria-label="' + esc(s.askAria + ': ' + asking) + '">' +
           icon('whatsapp') + '<span>' + esc(s.askOnWhatsapp) + '</span></a>';
   html += '</div></article>';
 
@@ -624,11 +729,11 @@ function cardHTML(p) {
 
 /* One titled section of cards. Returns '' when the section has nothing in it,
    so an empty section never appears at all. */
-function sectionHTML(key, list) {
-  if (!list.length) return '';
+function sectionHTML(key, groups) {
+  if (!groups.length) return '';
   return '<section class="group" id="cat-' + esc(key) + '">' +
          '<h2 class="group-title">' + esc(categoryLabel(key)) + '</h2>' +
-         '<div class="grid">' + list.map(cardHTML).join('') + '</div>' +
+         '<div class="grid">' + groups.map(cardHTML).join('') + '</div>' +
          '</section>';
 }
 
@@ -710,16 +815,46 @@ function renderCatalog() {
 
   renderFilters(inStock);
 
-  var byPrice = function (a, b) { return a.price - b.price; };
   var keys = activeCategories(inStock);
   var shown = (FILTER === 'all') ? keys : keys.filter(function (k) { return k === FILTER; });
 
   host.innerHTML = shown.map(function (key) {
-    var list = inStock.filter(function (p) { return categoryOf(p) === key; }).sort(byPrice);
-    return sectionHTML(key, list);
+    var rows = inStock.filter(function (p) { return categoryOf(p) === key; });
+    return sectionHTML(key, groupVariants(rows));
   }).join('');
 
   attachImageFallbacks(host);
+  attachVariantButtons(host);
+}
+
+/* Clicking a variant button redraws only that one card, so the page does not
+   jump and the rest of the list is left alone. */
+function attachVariantButtons(host) {
+  host.querySelectorAll('.card [data-variant]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var card = btn.closest('.card');
+      if (!card) return;
+      VARIANT[card.getAttribute('data-group')] = parseInt(btn.getAttribute('data-variant'), 10);
+      rerenderCard(card.getAttribute('data-group'));
+    });
+  });
+}
+
+function rerenderCard(key) {
+  var card = document.getElementById('p-' + key);
+  if (!card) return;
+
+  var group = null;
+  var inStock = PRODUCTS.filter(isInStock);
+  groupVariants(inStock).forEach(function (g) { if (g.key === key) group = g; });
+  if (!group) return;
+
+  card.outerHTML = cardHTML(group);
+
+  var fresh = document.getElementById('p-' + key);
+  if (!fresh) return;
+  attachImageFallbacks(fresh.parentNode);
+  attachVariantButtons(fresh.parentNode);
 }
 
 /* If a photo is missing from /images/, the card keeps its shape and shows a
@@ -1063,6 +1198,11 @@ function brandOf(model) {
   return KNOWN_BRANDS[first.toLowerCase()] || null;
 }
 
+/* Two rows can share a model, so the model alone is not a unique id. */
+function productRef(p) {
+  return '#p-' + slug(p.model) + '-' + String(p.price).replace('.', '-');
+}
+
 function productNode(p) {
   var description = p.model + (p.spec_en ? ' — ' + p.spec_en : '') + '. ' +
     'Open box, ex-corporate, tested before shipping. ' +
@@ -1072,14 +1212,14 @@ function productNode(p) {
 
   var node = {
     '@type': 'Product',
-    '@id': CONFIG.siteUrl + '/#p-' + slug(p.model),
+    '@id': CONFIG.siteUrl + '/' + productRef(p),
     name: p.model,
     description: description,
     category: categoryLabelEnglish(categoryOf(p)),
     itemCondition: 'https://schema.org/RefurbishedCondition',
     offers: {
       '@type': 'Offer',
-      url: CONFIG.siteUrl + '/#p-' + slug(p.model),
+      url: CONFIG.siteUrl + '/' + productRef(p),
       priceCurrency: 'USD',
       price: String(p.price),
       itemCondition: 'https://schema.org/RefurbishedCondition',
