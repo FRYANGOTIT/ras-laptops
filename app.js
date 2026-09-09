@@ -35,7 +35,7 @@ const CONFIG = {
     facebook: '',
 
     /* <-- PASTE YOUR TIKTOK PROFILE URL HERE, e.g. https://www.tiktok.com/@yourname */
-    tiktok: ''
+    tiktok: 'https://www.tiktok.com/@lb_ras.laptops'
   },
 
   /* ===========================================================================
@@ -176,7 +176,7 @@ const STRINGS = {
     /* hero */
     heroEyebrow: 'RAS Solutions · Lebanon',
     heroTitle: 'Open box, ex-corporate business laptops in Lebanon',
-    heroText: 'Dell Latitude, HP ProBook and Lenovo ThinkPad. Every unit is tested before shipping and carries a 3-month warranty. Delivery is free all over Lebanon, and you inspect the laptop with the driver before you pay.',
+    heroText: 'Dell Latitude, HP ProBook and Lenovo ThinkPad. Every unit is tested before shipping and carries a 3-month warranty minimum. Delivery is free all over Lebanon.',
     heroCta: 'Ask on WhatsApp',
     trust: [
       '3-month warranty',
