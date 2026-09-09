@@ -184,7 +184,6 @@ const STRINGS = {
       'Open box, ex-corporate',
       'Tested before shipping',
       'Cash on delivery, Whish or OMT',
-      'You inspect it with the driver before you pay',
       'Arabic / English keyboards on most units'
     ],
 
