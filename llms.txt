@@ -8,6 +8,7 @@ business laptops online in Lebanon.
 - https://raslaptops.com/ — current stock: model, specification and price for every unit available.
 - https://raslaptops.com/about — company details, warranty, delivery, payment, inspection, FAQ.
 - https://raslaptops.com/estimate — free laptop price estimator for Lebanon: pick processor, generation, RAM, storage, graphics, screen, battery and condition, get an estimated value range in USD.
+- https://raslaptops.com/choose — guided chooser: five plain-language questions about intended use, budget, portability, time away from mains power, and touchscreen preference; returns matching laptops from current stock.
 
 ## What is sold
 
@@ -18,6 +19,7 @@ business laptops online in Lebanon.
 
 ## Tools
 
+- Guided laptop chooser: recommends from live stock based on what the laptop is for, requiring no technical knowledge from the visitor.
 - Laptop price estimator: estimates what a laptop is worth in Lebanon from its specification.
 - Output is a USD range, described on the page as a guide and not a purchase offer.
 - Inputs: brand grade, processor family, processor generation, RAM, storage, graphics, screen, battery condition, physical condition, and extras such as touchscreen or backlit keyboard.

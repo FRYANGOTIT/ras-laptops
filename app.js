@@ -63,7 +63,7 @@ const CONFIG = {
     /* How tall that picture is in the header, in pixels. */
     imageHeight: 42,
 
-    /* The lettermark, used when no image is set. Two to four letters. */
+    /* The lettermark, shown when no image is set. Two to four letters. */
     mark: 'RAS',
 
     /* The shop name printed next to the logo. */
@@ -169,6 +169,7 @@ const STRINGS = {
     navProducts: 'Laptops',
     navAbout: 'About us',
     navEstimate: 'Price estimator',
+    navChoose: 'Help me choose',
     waShort: 'WhatsApp',
     aboutTitle: 'About RAS Solutions',
 
@@ -186,6 +187,29 @@ const STRINGS = {
       'You inspect it with the driver before you pay',
       'Arabic / English keyboards on most units'
     ],
+
+    /* help me choose */
+    chooseTitle: 'Help me choose a laptop',
+    chooseIntro: 'Five questions about what you will actually do with it. No technical words, and nothing you need to look up. We will point you at what we have in stock that fits.',
+    chooseStep: function (a, b) { return 'Question ' + a + ' of ' + b; },
+    chooseBack: 'Back',
+    chooseRestart: 'Start again',
+    chooseResultTitle: 'What we would suggest',
+    chooseResultNone: 'Nothing in stock matches that closely right now. Message us on WhatsApp and we will tell you what is coming in.',
+    chooseAnswersTitle: 'You said',
+    chooseOverBudget: 'A little above the budget you picked',
+    chooseWhyRam: function (n) { return n + 'GB of memory, so a lot of tabs and programs stay smooth'; },
+    chooseWhyCpu: function (n) { return 'An i' + n + ' processor, which is the faster end of what we carry'; },
+    chooseWhyGen: function (n) { return n + 'th generation, which means better battery life'; },
+    chooseWhySmall: function (n) { return n + ' inch, easy to carry every day'; },
+    chooseWhyBig: function (n) { return n + ' inch, a bigger screen to work on'; },
+    chooseWhyTouch: 'Touchscreen, and it folds back into a tablet',
+    chooseWhyBudget: 'Sits inside the budget you picked',
+    chooseAsk: 'Send my answers on WhatsApp',
+    waChoose: function (summary, pick) {
+      return "Hi, I answered the questions on your site.\n" + summary +
+             (pick ? "\nIt suggested: " + pick : '');
+    },
 
     /* deals */
     dealsHeading: 'This week',
@@ -269,6 +293,7 @@ const STRINGS = {
     navProducts: 'اللابتوبات',
     navAbout: 'مين نحنا',
     navEstimate: 'قدّر سعر جهازك',
+    navChoose: 'ساعدني اختار',
     waShort: 'واتساب',
     aboutTitle: 'مين نحنا — RAS Solutions',
 
@@ -286,6 +311,29 @@ const STRINGS = {
       'بتفتّش عاللابتوب مع الدرايفر قبل ما تدفع',
       'أغلب الأجهزة كيبورد عربي / إنكليزي'
     ],
+
+    /* help me choose */
+    chooseTitle: 'ساعدني اختار لابتوب',
+    chooseIntro: 'خمس أسئلة عن شو رح تعمل فيه. بلا كلمات تقنية، وبلا شي لازم تدوّر عليه. ومنقلك شو عنا متوفّر بيناسبك.',
+    chooseStep: function (a, b) { return 'سؤال ' + a + ' من ' + b; },
+    chooseBack: 'رجوع',
+    chooseRestart: 'من الأول',
+    chooseResultTitle: 'هيدا اللي منقترحه',
+    chooseResultNone: 'ما في شي متوفّر هلق بيناسب تماماً. راسلنا عالواتساب ومنقلك شو جايي.',
+    chooseAnswersTitle: 'إنت قلت',
+    chooseOverBudget: 'أعلى شوي من الميزانية يلي اخترتها',
+    chooseWhyRam: function (n) { return n + 'GB رام، فبيضل سريع مع كتير تابات وبرامج'; },
+    chooseWhyCpu: function (n) { return 'معالج i' + n + '، وهو من الأقوى يلي عنا'; },
+    chooseWhyGen: function (n) { return 'الجيل ' + n + '، يعني بطارية أطول'; },
+    chooseWhySmall: function (n) { return n + ' إنش، سهل تشيله كل يوم'; },
+    chooseWhyBig: function (n) { return n + ' إنش، شاشة أكبر تشتغل عليها'; },
+    chooseWhyTouch: 'شاشة تاتش وبتنفتل تابلت',
+    chooseWhyBudget: 'ضمن الميزانية يلي اخترتها',
+    chooseAsk: 'ابعت جوابي عالواتساب',
+    waChoose: function (summary, pick) {
+      return 'مرحبا، استعملت مساعد الاختيار عالموقع.\n' + summary +
+             (pick ? '\nاقترح عليي: ' + pick : '');
+    },
 
     /* deals */
     dealsHeading: 'عروض هالأسبوع',
@@ -1000,6 +1048,7 @@ function render() {
   renderDeals();
   renderCatalog();
   renderEstimator();
+  renderChooser();
 }
 
 function setLanguage(next) {
@@ -1092,7 +1141,7 @@ function renderEstimator() {
   renderEstimateResult();
 }
 
-/* A one-line summary of the picked laptop, used in the WhatsApp message. */
+/* A one-line summary of the picked laptop, for the WhatsApp message. */
 function estimateSpecLine() {
   return ESTIMATE_FIELDS.map(function (f) {
     return shortLabel(pricingOption(f.group, ESTIMATE_INPUT[f.group]));
@@ -1402,6 +1451,138 @@ function wireCarousel(deal) {
 }
 
 /* -----------------------------------------------------------------------------
+   7d) Help me choose  (choose.html)
+
+   The questions and the scoring live in chooser.js. This part only draws one
+   question at a time and then the answer.
+----------------------------------------------------------------------------- */
+
+var ANSWERS = {};
+var CHOOSE_STEP = 0;
+
+function chooserOption(qKey, aKey) {
+  var found = null;
+  CHOOSER.questions.forEach(function (q) {
+    if (q.key !== qKey) return;
+    q.answers.forEach(function (a) { if (a.key === aKey) found = a; });
+  });
+  return found;
+}
+
+function renderChooser() {
+  var host = document.getElementById('chooser');
+  if (!host || typeof CHOOSER === 'undefined') return;
+  var s = t();
+  var qs = CHOOSER.questions;
+
+  if (CHOOSE_STEP >= qs.length) { renderChooserResult(host); return; }
+
+  var q = qs[CHOOSE_STEP];
+  var html = '';
+
+  html += '<div class="ch-progress" aria-hidden="true"><span style="width:' +
+          Math.round((CHOOSE_STEP / qs.length) * 100) + '%"></span></div>';
+  html += '<p class="ch-step">' + esc(s.chooseStep(CHOOSE_STEP + 1, qs.length)) + '</p>';
+  html += '<h2 class="ch-question">' + esc(q[LANG] || q.en) + '</h2>';
+
+  html += '<div class="ch-answers">';
+  q.answers.forEach(function (a) {
+    var on = (ANSWERS[q.key] === a.key);
+    html += '<button type="button" class="ch-answer' + (on ? ' is-on' : '') + '" ' +
+            'data-q="' + esc(q.key) + '" data-a="' + esc(a.key) + '">' +
+            esc(a[LANG] || a.en) + '</button>';
+  });
+  html += '</div>';
+
+  if (CHOOSE_STEP > 0) {
+    html += '<p class="ch-nav"><button type="button" class="btn btn-ghost" data-back>' +
+            esc(s.chooseBack) + '</button></p>';
+  }
+
+  host.innerHTML = html;
+
+  host.querySelectorAll('[data-a]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      ANSWERS[btn.getAttribute('data-q')] = btn.getAttribute('data-a');
+      CHOOSE_STEP++;
+      renderChooser();
+    });
+  });
+  var back = host.querySelector('[data-back]');
+  if (back) back.addEventListener('click', function () {
+    CHOOSE_STEP = Math.max(0, CHOOSE_STEP - 1);
+    renderChooser();
+  });
+}
+
+/* A plain-language line for each reason the scorer gave. */
+function chooserReason(r) {
+  var s = t();
+  if (r.key === 'ram')    return s.chooseWhyRam(r.value);
+  if (r.key === 'cpu')    return s.chooseWhyCpu(r.value);
+  if (r.key === 'gen')    return s.chooseWhyGen(r.value);
+  if (r.key === 'small')  return s.chooseWhySmall(r.value);
+  if (r.key === 'big')    return s.chooseWhyBig(r.value);
+  if (r.key === 'touch')  return s.chooseWhyTouch;
+  if (r.key === 'budget') return s.chooseWhyBudget;
+  return '';
+}
+
+/* "What will you mostly do on it? Internet, email..." for the WhatsApp message */
+function chooserSummary() {
+  return CHOOSER.questions.map(function (q) {
+    var a = chooserOption(q.key, ANSWERS[q.key]);
+    if (!a) return '';
+    return '- ' + (q[LANG] || q.en) + ' ' + (a[LANG] || a.en);
+  }).filter(Boolean).join('\n');
+}
+
+function renderChooserResult(host) {
+  var s = t();
+  var inStock = PRODUCTS.filter(isInStock);
+  var picks = inStock.length ? chooseLaptops(inStock, ANSWERS) : [];
+
+  var html = '<div class="ch-progress done" aria-hidden="true"><span style="width:100%"></span></div>';
+  html += '<h2 class="ch-question">' + esc(s.chooseResultTitle) + '</h2>';
+
+  if (!picks.length) {
+    html += '<p class="ch-none">' + esc(s.chooseResultNone) + '</p>';
+  } else {
+    html += '<div class="ch-picks">';
+    picks.forEach(function (r) {
+      var reasons = r.reasons.map(chooserReason).filter(Boolean).slice(0, 3);
+      html += '<div class="ch-pick">';
+      if (reasons.length || r.overBudget) {
+        html += '<ul class="ch-why">';
+        reasons.forEach(function (line) { html += '<li>' + esc(line) + '</li>'; });
+        if (r.overBudget) html += '<li class="over">' + esc(s.chooseOverBudget) + '</li>';
+        html += '</ul>';
+      }
+      html += cardHTML({ model: r.product.model, key: slug(r.product.model) + '-pick',
+                         variants: [r.product] });
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+
+  var pickName = picks.length ? picks[0].product.model : '';
+  html += '<p class="ch-actions">' +
+    '<a class="btn btn-wa" target="_blank" rel="noopener" href="' +
+      esc(whatsappLink(s.waChoose(chooserSummary(), pickName))) + '">' +
+      icon('whatsapp') + '<span>' + esc(s.chooseAsk) + '</span></a>' +
+    '<button type="button" class="btn btn-ghost" data-restart>' + esc(s.chooseRestart) + '</button>' +
+    '</p>';
+
+  host.innerHTML = html;
+
+  var restart = host.querySelector('[data-restart]');
+  if (restart) restart.addEventListener('click', function () {
+    ANSWERS = {}; CHOOSE_STEP = 0; renderChooser();
+  });
+  attachImageFallbacks(host);
+}
+
+/* -----------------------------------------------------------------------------
    8) Structured data (JSON-LD)
 
    This is what ChatGPT, Claude, Perplexity, Google and Bing read when they are
@@ -1586,8 +1767,11 @@ function loadDeals() {
 }
 
 function loadInventory() {
-  var host = document.getElementById('catalog');
-  if (!host) { injectStructuredData(); return; }   /* about.html */
+  /* The shop needs the sheet, and so does the chooser, which recommends from
+     what is actually in stock. Pages that need neither - about, the estimator -
+     skip the request entirely. */
+  var needed = document.getElementById('catalog') || document.getElementById('chooser');
+  if (!needed) { injectStructuredData(); return; }
 
   fetch(csvUrl(), { cache: 'no-store' })
     .then(function (res) {
@@ -1608,6 +1792,7 @@ function loadInventory() {
     .then(function () {
       LOADING = false;
       renderCatalog();
+      renderChooser();
       injectStructuredData();
     });
 }

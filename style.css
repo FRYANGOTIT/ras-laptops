@@ -556,3 +556,68 @@ html[dir="rtl"] .deal-arrow svg { transform: scaleX(-1); }
 .deal-text { margin: 0; font-size: 14px; color: var(--text-muted); }
 .deal-actions { display: flex; flex-wrap: wrap; gap: 9px; margin: 14px 0 0; }
 .deal-actions .btn { flex: 1 1 auto; }
+
+/* ---------- help me choose -------------------------------------------- */
+
+.chooser {
+  max-width: 640px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 20px 18px 22px; margin-bottom: 34px;
+}
+
+.ch-progress {
+  height: 4px; border-radius: 999px; background: var(--surface-2);
+  overflow: hidden; margin-bottom: 16px;
+}
+.ch-progress span {
+  display: block; height: 100%; background: var(--cyan);
+  transition: width .25s ease;
+}
+.ch-progress.done span { background: var(--in-stock); }
+
+.ch-step {
+  margin: 0 0 6px; font-size: 12.5px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.09em;
+}
+html[lang="ar"] .ch-step { text-transform: none; letter-spacing: 0; font-size: 14px; }
+
+.ch-question { margin: 0 0 16px; font-size: 21px; color: var(--navy); }
+
+.ch-answers { display: grid; gap: 9px; }
+.ch-answer {
+  width: 100%; text-align: start;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  border-radius: var(--radius-btn); padding: 14px 15px;
+  font-family: var(--font-body); font-size: 15.5px; font-weight: 600; line-height: 1.4;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.ch-answer:hover { border-color: var(--royal); background: var(--surface-2); }
+.ch-answer.is-on { background: var(--navy); border-color: var(--navy); color: var(--on-dark); }
+
+.ch-nav { margin: 16px 0 0; }
+
+.ch-picks { display: grid; gap: 18px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .chooser { max-width: 900px; } .ch-picks { grid-template-columns: repeat(2, 1fr); } }
+
+.ch-pick { display: flex; flex-direction: column; }
+
+.ch-why {
+  list-style: none; margin: 0 0 10px; padding: 0;
+  display: flex; flex-direction: column; gap: 5px;
+}
+.ch-why li {
+  position: relative; padding-inline-start: 20px;
+  font-size: 13.5px; color: var(--text-muted);
+}
+.ch-why li::before {
+  content: ""; position: absolute; inset-inline-start: 4px; top: 8px;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--in-stock);
+}
+.ch-why li.over { color: var(--text-muted); }
+.ch-why li.over::before { background: var(--text-muted); }
+
+.ch-none { margin: 0 0 16px; color: var(--text-muted); }
+.ch-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 0; }
+.ch-actions .btn { flex: 1 1 auto; }

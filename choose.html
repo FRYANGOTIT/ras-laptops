@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Laptop price estimator — what is your laptop worth in Lebanon?</title>
-<meta name="description" content="Free laptop price estimator for Lebanon. Pick your processor, RAM, storage, graphics, battery and condition and get an estimated value in USD, based on what comparable laptops sell for in Lebanon.">
+<title>Help me choose a laptop — RAS Solutions Lebanon</title>
+<meta name="description" content="Not sure which laptop to buy? Answer five plain questions about what you will actually use it for and we will suggest the laptops we have in stock in Lebanon that fit. No technical knowledge needed.">
 
-<link rel="canonical" href="https://raslaptops.com/estimate">
+<link rel="canonical" href="https://raslaptops.com/choose">
 <meta name="theme-color" content="#0B1F3A">
 <link rel="icon" href="images/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="images/logo.png">
@@ -16,15 +16,15 @@
 <meta property="og:site_name" content="RAS Solutions">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="ar_LB">
-<meta property="og:url" content="https://raslaptops.com/estimate">
-<meta property="og:title" content="What is your laptop worth in Lebanon?">
-<meta property="og:description" content="Pick your specs and get an estimated value in USD, based on what comparable laptops sell for in Lebanon.">
+<meta property="og:url" content="https://raslaptops.com/choose">
+<meta property="og:title" content="Help me choose a laptop">
+<meta property="og:description" content="Answer five plain questions about what you will use it for and we will suggest what fits, from what is in stock in Lebanon.">
 <meta property="og:image" content="https://raslaptops.com/images/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="What is your laptop worth in Lebanon?">
-<meta name="twitter:description" content="Pick your specs and get an estimated value in USD, based on what comparable laptops sell for in Lebanon.">
+<meta name="twitter:title" content="Help me choose a laptop">
+<meta name="twitter:description" content="Answer five plain questions about what you will use it for and we will suggest what fits, from what is in stock in Lebanon.">
 <meta name="twitter:image" content="https://raslaptops.com/images/og-cover.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,7 +35,7 @@
 </head>
 <body>
 
-<a class="skip" href="#estimator-form">Skip to the estimator</a>
+<a class="skip" href="#chooser">Skip to the questions</a>
 
 <header class="site-header">
   <div class="wrap header-row">
@@ -58,8 +58,8 @@
   <nav class="site-nav" aria-label="Main">
     <div class="wrap nav-row">
       <a href="index.html" data-i18n="navProducts">Laptops</a>
-      <a href="estimate.html" class="is-current" data-i18n="navEstimate">Price estimator</a>
-      <a href="choose.html" data-i18n="navChoose">Help me choose</a>
+      <a href="estimate.html" data-i18n="navEstimate">Price estimator</a>
+      <a href="choose.html" class="is-current" data-i18n="navChoose">Help me choose</a>
       <a href="about.html" data-i18n="navAbout">About us</a>
     </div>
   </nav>
@@ -68,24 +68,16 @@
 <main>
   <div class="wrap">
 
-    <h1 class="page-title" data-i18n="estTitle">What is your laptop worth in Lebanon?</h1>
-    <p class="page-intro" data-i18n="estIntro">Pick what your laptop has and the estimate updates as you go. It is based on what comparable laptops sell for in Lebanon.</p>
+    <h1 class="page-title" data-i18n="chooseTitle">Help me choose a laptop</h1>
+    <p class="page-intro" data-i18n="chooseIntro">Five questions about what you will actually do with it. No technical words, and nothing you need to look up. We will point you at what we have in stock that fits.</p>
 
-    <div class="est-layout">
-
-      <!-- the dropdowns are written from pricing-model.js -->
-      <form class="est-form" id="estimator-form" autocomplete="off"
-            onsubmit="return false;"></form>
-
-      <!-- the figure, the breakdown and the CSV download -->
-      <aside class="est-result" id="estimator-result" aria-live="polite"></aside>
-
-    </div>
+    <!-- the questions are written from chooser.js -->
+    <div class="chooser" id="chooser" aria-live="polite"></div>
 
     <noscript>
       <section class="notice">
-        <h2>The estimator needs JavaScript</h2>
-        <p>Send us the model, the processor, the RAM and the storage on WhatsApp and we will price it for you.</p>
+        <h2>This needs JavaScript</h2>
+        <p>Tell us on WhatsApp what you will use the laptop for and what you would like to spend, and we will suggest one.</p>
         <p class="notice-actions">
           <a class="btn btn-wa" href="https://wa.me/96176792834" target="_blank" rel="noopener">WhatsApp +961 76 792 834</a>
         </p>
@@ -129,7 +121,7 @@
   </a>
 </div>
 
-<script src="pricing-model.js" defer></script>
+<script src="chooser.js" defer></script>
 <script src="app.js" defer></script>
 </body>
 </html>

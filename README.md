@@ -11,6 +11,8 @@ about.html        company page, the one AI assistants read
 style.css
 app.js            CONFIG and all wording live at the top of this file
 pricing-model.js  every number the price estimator uses
+choose.html       the guided "help me choose" questions
+chooser.js        the questions and the scoring behind them
 llms.txt        plain-text summary for AI crawlers
 robots.txt
 sitemap.xml
@@ -396,7 +398,59 @@ buy-price calculator publishes your margin.
 
 ---
 
-## 9. Add a photo
+## 9. Help me choose
+
+`choose.html` asks five questions and then recommends laptops **from what is
+actually in stock**. The questions and the scoring live in **`chooser.js`**.
+
+**The one rule this page is built on: a customer should never need to know what
+RAM is.** Every question asks what they will *do* with the laptop. The
+translation into specifications happens quietly in the file:
+
+```js
+{ key: 'study',
+  en: 'University work, with a lot of tabs open at once',
+  needs: { ram: 8, cpu: 5, gen: 10 } },
+```
+
+The customer reads "a lot of tabs open at once". The site reads "8GB or more,
+i5 or better, 10th generation or newer". If you ever catch yourself writing
+"i5 or better" in the question text, move it into `needs` instead.
+
+**To change a question**, edit its `en` and `ar`. **To add one**, copy a whole
+block. **To change what an answer asks for**, edit its `needs`:
+
+| in `needs` | meaning |
+| --------- | ------- |
+| `ram` | minimum gigabytes of memory |
+| `cpu` | minimum processor level — 3, 5 or 7, as in i3 / i5 / i7 |
+| `gen` | minimum processor generation — newer also means better battery |
+| `maxScreen` / `minScreen` | inches |
+| `price` | `[lowest, highest]` in USD |
+| `touch` | `true` when they asked for a folding touchscreen |
+
+**How much each thing counts** is in `CHOOSER.weights`. Raise `touch` and asking
+for a convertible almost guarantees you get one; raise `priceInside` and budget
+starts to outweigh specification.
+
+**It never shows an empty result.** Someone who picks "video editing" and "under
+$250" still gets the three closest laptops, with the honest note that they are
+above the budget they chose. A dead end would just send them back to Instagram.
+
+**Where the numbers come from.** The sheet stores specs as one line of text —
+`i5 12th gen / 16GB / 512GB / 14"` — which is right for a human but useless for
+comparing. `parseSpec` pulls the numbers back out of it. So **keep writing specs
+the way you already do**, with the parts separated by ` / `. If you invent a new
+format, the chooser will still work but will match less well.
+
+**The WhatsApp button sends their answers**, in sentences, along with the laptop
+it suggested. That means a customer arrives in your chat having already told you
+their budget, what they need it for, and whether they carry it daily — which is
+most of the conversation you would otherwise have to have.
+
+---
+
+## 10. Add a photo
 
 1. Name the file after the product, lowercase, with dashes: `latitude-7430.jpg`.
 2. Drop it into the `images/` folder.
@@ -411,7 +465,7 @@ shows a neutral placeholder instead of a broken image.
 
 ---
 
-## 10. Hide a product
+## 11. Hide a product
 
 Set its `stock` to **0**, or clear the cell.
 
@@ -420,7 +474,7 @@ the site on the next page load. Put a number back in and it returns.
 
 ---
 
-## 11. Change the wording
+## 12. Change the wording
 
 All interface text is in the `STRINGS` object near the top of `app.js`, with an `en`
 block and an `ar` block side by side. Edit the line you want, in both languages.
@@ -437,7 +491,7 @@ two do not drift apart.
 
 ---
 
-## 12. Hosting and the domain
+## 13. Hosting and the domain
 
 The site is live at **https://raslaptops.com**, served by **Cloudflare Pages**,
 which redeploys automatically on every push to `main`. There is no build step:
@@ -485,7 +539,7 @@ is no reason to serve a second copy.
 
 ---
 
-## 13. Previewing on your own machine
+## 14. Previewing on your own machine
 
 Opening `index.html` by double-clicking mostly works, **except** the product list:
 browsers block a page opened from your hard drive from fetching the Google Sheet. You
