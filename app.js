@@ -82,6 +82,26 @@ const CONFIG = {
   /* >>> PASTE YOUR PUBLISHED GOOGLE SHEET CSV LINK BETWEEN THESE QUOTES <<< */
   sheetCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQD16eiUn9kopdnMEbwTZf9DnR8oBj3YewMiGtdh1JrOMl6RGFM-XEG4rqHGhLubJtQBf9bUE8Qhrrz/pub?gid=0&single=true&output=csv',
 
+  /* ===========================================================================
+     DEALS - the carousels at the top of the shop.
+
+     These are the same pictures you post as an Instagram carousel. Upload them
+     into images/, then list them on a second tab of the Google Sheet and
+     publish that tab the same way you published the inventory one.
+
+     The link below is the published CSV of THAT tab. It is the same address as
+     sheetCsvUrl with a different gid= number on the end - the gid is in the
+     browser bar when you have the tab open in Google Sheets.
+
+     Leave it empty and the deals section does not appear at all.
+
+     Columns on that tab, first row being the header:
+       active | title_en | title_ar | text_en | text_ar | images | link
+     'images' is one cell holding the filenames separated by commas, in the
+     order you want them swiped. 'link' is optional - the Instagram post.
+     =========================================================================== */
+  dealsCsvUrl: '',
+
   /* Folder that holds the product photos. Keep the trailing slash. */
   imagesPath: 'images/',
 
@@ -166,6 +186,14 @@ const STRINGS = {
       'You inspect it with the driver before you pay',
       'Arabic / English keyboards on most units'
     ],
+
+    /* deals */
+    dealsHeading: 'This week',
+    dealPrev: 'Previous picture',
+    dealNext: 'Next picture',
+    dealOnInstagram: 'See it on Instagram',
+    dealAsk: 'Ask about this',
+    waDeal: function (title) { return "Hi, I saw " + title + " on your site"; },
 
     /* filters */
     filterAll: 'Everything',
@@ -259,6 +287,14 @@ const STRINGS = {
       'أغلب الأجهزة كيبورد عربي / إنكليزي'
     ],
 
+    /* deals */
+    dealsHeading: 'عروض هالأسبوع',
+    dealPrev: 'الصورة السابقة',
+    dealNext: 'الصورة التالية',
+    dealOnInstagram: 'شوفه عإنستغرام',
+    dealAsk: 'اسأل عن هيدا',
+    waDeal: function (title) { return 'مرحبا، شفت ' + title + ' عالموقع'; },
+
     /* filters */
     filterAll: 'الكل',
     filterAria: 'فلترة حسب النوع',
@@ -330,6 +366,10 @@ var LANG = 'en';
 
 /* Which category chip is selected. 'all' shows every section. */
 var FILTER = 'all';
+
+/* Deals loaded from the second sheet tab. An empty list simply hides the
+   section - a deal failing to load must never take the shop down with it. */
+var DEALS = [];
 
 /* Products loaded from the sheet, and how that load went. */
 var PRODUCTS = [];
@@ -957,6 +997,7 @@ function renderChrome() {
 
 function render() {
   renderChrome();
+  renderDeals();
   renderCatalog();
   renderEstimator();
 }
@@ -1145,6 +1186,222 @@ function attachCsvDownload(r) {
 }
 
 /* -----------------------------------------------------------------------------
+   7c) Deals
+
+   A row on the deals tab becomes one card with a swipeable strip of pictures -
+   the same set you would post as an Instagram carousel.
+
+   The swiping itself is done by the browser, with CSS scroll snapping. The
+   JavaScript here only keeps the dots and the arrows in step, which is why it
+   works the same with a finger, a trackpad, a mouse wheel or a keyboard.
+----------------------------------------------------------------------------- */
+
+var DEAL_COLUMNS = ['active', 'title_en', 'title_ar', 'text_en', 'text_ar', 'images', 'link'];
+
+function rowsToDeals(rows) {
+  if (!rows.length) return [];
+
+  var header = rows[0].map(function (h) {
+    return String(h).trim().toLowerCase().replace(/\s+/g, '_');
+  });
+  var usesHeader = header.indexOf('images') !== -1;
+  var body = usesHeader ? rows.slice(1) : rows;
+
+  var idx = {};
+  DEAL_COLUMNS.forEach(function (name) {
+    var at = usesHeader ? header.indexOf(name) : -1;
+    idx[name] = (at !== -1) ? at : DEAL_COLUMNS.indexOf(name);
+  });
+
+  return body.map(function (r) {
+    function cell(name) {
+      var at = idx[name];
+      return (at > -1 && r[at] != null) ? String(r[at]).trim() : '';
+    }
+    return {
+      active: cell('active'),
+      title_en: cell('title_en'),
+      title_ar: cell('title_ar'),
+      text_en: cell('text_en'),
+      text_ar: cell('text_ar'),
+      link: cell('link'),
+      images: cell('images').split(',').map(function (x) { return x.trim(); })
+                            .filter(function (x) { return x !== ''; })
+    };
+  }).filter(function (d) {
+    /* a row is shown when it has pictures and is not switched off */
+    var off = d.active.toLowerCase();
+    return d.images.length > 0 && off !== 'no' && off !== 'false' && off !== '0';
+  });
+}
+
+function dealTitle(d) { return (LANG === 'ar' && d.title_ar) ? d.title_ar : d.title_en; }
+function dealText(d)  { return (LANG === 'ar' && d.text_ar)  ? d.text_ar  : d.text_en; }
+
+function dealHTML(d, i) {
+  var s = t();
+  var title = dealTitle(d);
+  var text = dealText(d);
+  var many = d.images.length > 1;
+
+  var html = '<article class="deal" data-deal="' + i + '">';
+
+  html += '<div class="deal-frame">';
+  html += '<div class="deal-slides" data-slides>';
+  d.images.forEach(function (file, j) {
+    var alt = (title ? title + ' — ' : '') + s.altSuffix +
+              (many ? ' (' + (j + 1) + '/' + d.images.length + ')' : '');
+    html += '<div class="deal-slide">' +
+      '<img src="' + esc(CONFIG.imagesPath + file) + '" alt="' + esc(alt) + '" ' +
+      'loading="' + (i === 0 && j === 0 ? 'eager' : 'lazy') + '" decoding="async">' +
+      '</div>';
+  });
+  html += '</div>';
+
+  if (many) {
+    html += '<button type="button" class="deal-arrow prev" data-step="-1" ' +
+            'aria-label="' + esc(s.dealPrev) + '">' + chevron('prev') + '</button>';
+    html += '<button type="button" class="deal-arrow next" data-step="1" ' +
+            'aria-label="' + esc(s.dealNext) + '">' + chevron('next') + '</button>';
+    html += '<div class="deal-dots" data-dots>';
+    d.images.forEach(function (_, j) {
+      html += '<button type="button" class="deal-dot' + (j === 0 ? ' is-on' : '') + '" ' +
+              'data-go="' + j + '" aria-label="' + (j + 1) + ' / ' + d.images.length + '"></button>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  if (title || text || d.link) {
+    html += '<div class="deal-body">';
+    if (title) html += '<h3 class="deal-title" dir="' + dirFor(title) + '">' + esc(title) + '</h3>';
+    if (text)  html += '<p class="deal-text" dir="' + dirFor(text) + '">' + esc(text) + '</p>';
+    html += '<p class="deal-actions">' +
+      '<a class="btn btn-wa" target="_blank" rel="noopener" href="' +
+        esc(whatsappLink(s.waDeal(title || s.dealsHeading))) + '">' +
+        icon('whatsapp') + '<span>' + esc(s.dealAsk) + '</span></a>';
+    if (d.link) {
+      html += '<a class="btn btn-ghost" target="_blank" rel="noopener" href="' + esc(d.link) + '">' +
+              icon('instagram') + '<span>' + esc(s.dealOnInstagram) + '</span></a>';
+    }
+    html += '</p></div>';
+  }
+
+  html += '</article>';
+  return html;
+}
+
+function chevron(dir) {
+  var d = (dir === 'prev') ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7';
+  return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+         '<path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" ' +
+         'stroke-linejoin="round" d="' + d + '"/></svg>';
+}
+
+function renderDeals() {
+  var section = document.getElementById('deals');
+  var host = document.getElementById('deals-list');
+  if (!section || !host) return;
+
+  if (!DEALS.length) { section.hidden = true; host.innerHTML = ''; return; }
+
+  section.hidden = false;
+  host.innerHTML = DEALS.map(dealHTML).join('');
+
+  host.querySelectorAll('.deal').forEach(wireCarousel);
+
+  host.querySelectorAll('.deal-slide img').forEach(function (img) {
+    img.addEventListener('error', function handle() {
+      img.removeEventListener('error', handle);
+      img.src = IMAGE_PLACEHOLDER;
+    });
+  });
+}
+
+/* Keeps the dots and arrows in step with whatever the browser scrolled to.
+   Using scrollIntoView and an observer rather than scrollLeft arithmetic means
+   this behaves the same on the Arabic, right-to-left page. */
+function wireCarousel(deal) {
+  var strip = deal.querySelector('[data-slides]');
+  var slides = [].slice.call(deal.querySelectorAll('.deal-slide'));
+  var dots = [].slice.call(deal.querySelectorAll('[data-go]'));
+  if (!strip || slides.length < 2) return;
+
+  var current = 0;
+
+  /* scrollIntoView would scroll every scrollable ancestor, dragging the whole
+     page along with it. Scrolling the strip by a measured delta keeps the
+     movement inside the carousel, and because the delta is relative it is
+     correct on the right-to-left page too, where scrollLeft arithmetic is not
+     consistent between browsers. */
+  function show(i) {
+    var at = Math.max(0, Math.min(slides.length - 1, i));
+    var target = slides[at].getBoundingClientRect();
+    var box = strip.getBoundingClientRect();
+    var delta = (target.left + target.width / 2) - (box.left + box.width / 2);
+    var gentle = !(window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if (strip.scrollBy) strip.scrollBy({ left: delta, behavior: gentle ? 'smooth' : 'auto' });
+    else strip.scrollLeft += delta;
+
+    /* An arrow or a dot says exactly where we are going, so light up the right
+       dot now instead of waiting for the scroll to be noticed. Swiping with a
+       finger has no such intention to read, and is picked up by sync() below. */
+    mark(at);
+  }
+
+  function mark(i) {
+    current = i;
+    dots.forEach(function (d, j) { d.classList.toggle('is-on', j === i); });
+  }
+
+  dots.forEach(function (d) {
+    d.addEventListener('click', function () { show(parseInt(d.getAttribute('data-go'), 10)); });
+  });
+
+  deal.querySelectorAll('[data-step]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      show(current + parseInt(btn.getAttribute('data-step'), 10));
+    });
+  });
+
+  /* Which slide you are looking at is worked out by measuring, not by
+     listening for intersection events: whichever slide's centre sits nearest
+     the middle of the strip is the current one. That is true whichever way the
+     page reads, and it does not depend on when an observer happens to fire. */
+  function sync() {
+    var box = strip.getBoundingClientRect();
+    var middle = box.left + box.width / 2;
+    var best = 0;
+    var nearest = Infinity;
+    slides.forEach(function (sl, i) {
+      var r = sl.getBoundingClientRect();
+      var distance = Math.abs((r.left + r.width / 2) - middle);
+      if (distance < nearest) { nearest = distance; best = i; }
+    });
+    if (best !== current) mark(best);
+  }
+
+  /* Called straight from the scroll event. Browsers already coalesce scroll
+     events to about one per frame, and sync() only measures a handful of
+     elements, so there is nothing to gain from a requestAnimationFrame gate -
+     and plenty to lose: if that frame never arrives, which is what happens in
+     a throttled background tab, the gate latches shut and the dots stop
+     following the pictures for good. */
+  strip.addEventListener('scroll', sync, { passive: true });
+
+  window.addEventListener('resize', sync);
+
+  /* a picture arriving late changes the geometry */
+  deal.querySelectorAll('img').forEach(function (img) {
+    img.addEventListener('load', sync);
+  });
+
+  mark(0);
+  sync();
+}
+
+/* -----------------------------------------------------------------------------
    8) Structured data (JSON-LD)
 
    This is what ChatGPT, Claude, Perplexity, Google and Bing read when they are
@@ -1307,6 +1564,27 @@ function csvUrl() {
   return url + (url.indexOf('?') > -1 ? '&' : '?') + 'cb=' + Date.now();
 }
 
+/* Deals are a nice-to-have. If the tab is not set up, or the request fails,
+   the section stays hidden and the shop carries on as normal. */
+function loadDeals() {
+  if (!CONFIG.dealsCsvUrl || !document.getElementById('deals')) return;
+
+  var url = CONFIG.dealsCsvUrl;
+  if (CONFIG.bustCache) url += (url.indexOf('?') > -1 ? '&' : '?') + 'cb=' + Date.now();
+
+  fetch(url, { cache: 'no-store' })
+    .then(function (res) {
+      if (!res.ok) throw new Error('Deals tab responded with ' + res.status);
+      return res.text();
+    })
+    .then(function (text) { DEALS = rowsToDeals(parseCSV(text)); })
+    .catch(function (err) {
+      console.warn('RAS Solutions: could not load the deals tab.', err);
+      DEALS = [];
+    })
+    .then(renderDeals);
+}
+
 function loadInventory() {
   var host = document.getElementById('catalog');
   if (!host) { injectStructuredData(); return; }   /* about.html */
@@ -1347,6 +1625,7 @@ function init() {
 
   render();
   loadInventory();
+  loadDeals();
 }
 
 if (document.readyState === 'loading') {

@@ -126,7 +126,65 @@ worth updating those three files too so the crawlers agree with the page.
 
 ---
 
-## 3. Connect the Google Sheet
+## 3. The deals carousel
+
+The strip at the top of the shop, above the laptops. Each deal is a swipeable
+set of pictures — the same ones you post as an Instagram carousel.
+
+**It is switched off until you set it up.** With `dealsCsvUrl` empty the whole
+section is hidden and nothing changes.
+
+### Setting it up, once
+
+1. In the same Google Sheet, add a **second tab** and call it `deals`.
+2. Give it this header row:
+
+   ```
+   active | title_en | title_ar | text_en | text_ar | images | link
+   ```
+
+3. **File → Share → Publish to web**, pick the **deals** tab, choose
+   **Comma-separated values (.csv)**, Publish, copy the link.
+4. Paste it into `dealsCsvUrl` in `CONFIG`.
+
+It is the same address as `sheetCsvUrl` with a different `gid=` number — the
+gid is in your browser bar when that tab is open.
+
+### Adding a deal
+
+| column | what goes in it |
+| ------ | --------------- |
+| `active` | `no` or `false` hides the row. Anything else, including blank, shows it |
+| `title_en` / `title_ar` | the heading under the pictures |
+| `text_en` / `text_ar` | one line of description |
+| `images` | the filenames, **separated by commas**, in swipe order |
+| `link` | optional — the Instagram post, adds a "See it on Instagram" button |
+
+Upload the pictures to `images/` first, exactly as you do for products, then
+list them:
+
+```
+active | title_en      | images
+yes    | Back to school | latitude-7400.jpg, latitude-7490.jpg, probook-440-g7.jpg
+```
+
+That becomes one card you can swipe through, with dots underneath and arrows on
+desktop. Each deal also gets a WhatsApp button whose message names the deal, so
+you know which post the customer is asking about.
+
+**Why not embed the Instagram post directly?** Instagram's embed loads several
+hundred kilobytes of their JavaScript, renders in their styling rather than
+yours, and sometimes shows a login wall instead of the post. Since nearly all
+your visitors arrive on phone data from an ad, uploading the same pictures is
+faster, always works, and looks like the rest of the shop. The `link` column
+still sends people to the real post.
+
+**Sizing.** Instagram carousels are square, and the carousel here keeps whatever
+shape you give it, so square works well. Keep each file under about 300 KB.
+
+---
+
+## 4. Connect the Google Sheet
 
 **Publish the sheet as CSV**
 
@@ -211,7 +269,7 @@ To switch all of this off and go back to one card per row, set
 
 ---
 
-## 4. Categories
+## 5. Categories
 
 The sections of the shop are a list in `CONFIG.categories`:
 
@@ -241,7 +299,7 @@ with stock. With one section they would just be noise.
 
 ---
 
-## 5. Prices
+## 6. Prices
 
 Every price on the site is written by one setting:
 
@@ -255,7 +313,7 @@ your ads.
 
 ---
 
-## 6. Stock badges
+## 7. Stock badges
 
 Driven by the `stock` column, with no extra work:
 
@@ -271,7 +329,7 @@ on the site, so a red badge always means the same thing.
 
 ---
 
-## 7. The price estimator
+## 8. The price estimator
 
 `estimate.html` lets a visitor price their own laptop. Every number it uses lives
 in **`pricing-model.js`** — that is the only file to edit, and it is commented
@@ -338,7 +396,7 @@ buy-price calculator publishes your margin.
 
 ---
 
-## 8. Add a photo
+## 9. Add a photo
 
 1. Name the file after the product, lowercase, with dashes: `latitude-7430.jpg`.
 2. Drop it into the `images/` folder.
@@ -353,7 +411,7 @@ shows a neutral placeholder instead of a broken image.
 
 ---
 
-## 9. Hide a product
+## 10. Hide a product
 
 Set its `stock` to **0**, or clear the cell.
 
@@ -362,7 +420,7 @@ the site on the next page load. Put a number back in and it returns.
 
 ---
 
-## 10. Change the wording
+## 11. Change the wording
 
 All interface text is in the `STRINGS` object near the top of `app.js`, with an `en`
 block and an `ar` block side by side. Edit the line you want, in both languages.
@@ -379,7 +437,7 @@ two do not drift apart.
 
 ---
 
-## 11. Hosting and the domain
+## 12. Hosting and the domain
 
 The site is live at **https://raslaptops.com**, served by **Cloudflare Pages**,
 which redeploys automatically on every push to `main`. There is no build step:
@@ -427,7 +485,7 @@ is no reason to serve a second copy.
 
 ---
 
-## 12. Previewing on your own machine
+## 13. Previewing on your own machine
 
 Opening `index.html` by double-clicking mostly works, **except** the product list:
 browsers block a page opened from your hard drive from fetching the Google Sheet. You
